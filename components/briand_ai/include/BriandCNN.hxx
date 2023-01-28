@@ -14,5 +14,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
+#ifndef BRIAND_CNN_H
+#define BRIAND_CNN_H
+
 #include "BriandInclude.hxx"
 
+namespace Briand {
+    
+}
+
+#endif

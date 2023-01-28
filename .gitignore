@@ -1,5 +1,8 @@
 build/*
 !build/esp-idf/
 build/esp-idf/*
+!build/esp-idf/briand_ai/
+build/esp-idf/briand_ai/*
+!build/esp-idf/briand_ai/libbriand_ai.a
 !sdkconfig
 sdkconfig.old

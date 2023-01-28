@@ -14,5 +14,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "BriandInclude.hxx"
+#pragma once
 
+#ifndef BRIAND_INCLUDE_H
+#define BRIAND_INCLUDE_H
+
+/* All headers needed in library */
+
+// C++ STL
+
+#include <iostream>
+#include <cstdio>
+#include <cmath>
+#include <memory>
+
+// ESP-RELATED
+
+#include "esp_log.h"
+
+#endif

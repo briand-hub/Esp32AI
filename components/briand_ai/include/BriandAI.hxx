@@ -19,9 +19,11 @@
 #ifndef BRIAND_AI_H
 #define BRIAND_AI_H
 
-/* Library headers all-in-one */
+/* Library headers all-in-one for in-project include */
 
-
-
+#include "BriandMath.hxx"
+#include "BriandImage.hxx"
+#include "BriandNN.hxx"
+#include "BriandCNN.hxx"
 
 #endif
