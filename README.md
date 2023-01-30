@@ -24,7 +24,7 @@ Because I like to learn everyday and teach to others what I have learned.
 
 <a href="https://www.buymeacoffee.com/briandhub"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=briandhub&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
 
-## TUTORIAL
+## AI TUTORIAL
 
 **Please, take a look at the [Tutorial](AI Tutorial.md), is fun and explains what I did in this project. Very basic and for beginners, made of my own remarks and notes collected in years.**
 
@@ -45,7 +45,7 @@ All is under *Briand* namespace. Project folders and files:
 |--+ briand_ai
 |   |--+ include
     |  |-- BriandAI.hxx          Unique header to include in project
-    |  |-- BriandInclude.hxx     Unique header to be included inside library files
+    |  |-- BriandInclude.hxx     Unique header to be included inside library files with non-esp platform porting 
     |  |-- BriandNN.hxx          Neural Network library header
     |  |-- BriandCNN.hxx         Convolutional Neural Network library header
     |  |-- BriandMath.hxx        Math library (functions needed) header
@@ -55,27 +55,55 @@ All is under *Briand* namespace. Project folders and files:
     |-- BriandCNN.cpp
     |-- BriandMath.cpp
     |-- BriandImage.cpp
+    |-- BriandPorting.cpp
     |
     |-- CMakeLists.txt           Library build file
 ```
 
 ## Example projects and tests
 
+## Using on ESP32
 
+You can use project under any ESP32 platform with enough power and SPIRAM. I included the [sdkconfig](sdkconfig) file however you can use your own. Also check before building with menuconfig otherwise some errors may occour. I tested the setup with ESP32-WROVER and ESP32-S3.
+
+## Using under Linux
+
+It's enough easy! I have created a header that can do the trick (*components/briand_ai/BriandPorting.hxx*) by redefining the needed ESP-IDF functions used in the project with the linux or windows style. Of course, there are the basic ones and if you will use more on your project then you have to add them to this file.
+
+You can see [Makefile](/platform_porting/Makefile) and adjust what you need.
+
+In order to compile run command ``make`` and library will be compiled under windows or linux. Then main.cpp will be compiled too and executable will be created.
+
+Tested under linux with *g++ (Debian 8.3.0-6) 8.3.0* 
+
+## Using under Windows
+
+Library *could* be used under windows too with same makefile. However with *g++.exe (MinGW.org GCC-6.3.0-1) 6.3.0* is not compiling because pthread library is not available on Windows. I will try to do further tests to fnid a solution.
 
 ## Library performances
 
+### Base functions (activation, random ...)
+
+Tested on ESP32-S3 WROOM (by Freenove kit)
+
+```
+
+
+```
+
 ### To-do list
 
- - [ ] Start project and organize
+ - [x] Start project and organize
  - [ ] Include tutorial on development and my notes/remarks about AI
- - [ ] Decide sample project for starting
+ - [ ] Linux/Windows compatibility with porting library
+ - [x] Decide sample project for starting
  - [ ] NN basics
  - [ ] NN tests 
  - [ ] Deep learning basics
  - [ ] Deep learning tests
  - [ ] CNN basics
  - [ ] CNN tests
+ - [ ] Test memory leaks with **valgrind**
  - [ ] Library performance tests on ESP32-S3 and ESP32 WROVER (SPI-RAM devices)
  - [ ] Example project 1: OR port with NN
  - [ ] Example project 2: sum two numbers

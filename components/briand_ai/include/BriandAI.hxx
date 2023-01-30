@@ -21,6 +21,7 @@
 
 /* Library headers all-in-one for in-project include */
 
+#include "BriandInclude.hxx"
 #include "BriandMath.hxx"
 #include "BriandImage.hxx"
 #include "BriandNN.hxx"

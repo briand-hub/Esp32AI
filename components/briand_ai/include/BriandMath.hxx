@@ -21,8 +21,34 @@
 
 #include "BriandInclude.hxx"
 
+using namespace std;
+
 namespace Briand {
-    
+
+    /** @brief class with math functions used in all the project. 
+        If a more performing way of calculus is found then you need only to change the implementation here!
+    */
+    class Math {
+        public:
+
+        /** @brief Identity f(x) = x */
+        static double Identity(const double& x);
+
+        /** @brief ReLU function */
+        static double ReLU(const double& x);
+
+        /** @brief Sigmoid function */
+        static double Sigmoid(const double& x);
+
+        /** @brief Weighted sum function */
+        static double WeightedSum(const vector<double>& values, const vector<double>& weights);
+
+        /** @brief Random number between 0 and 1 */
+        static double Random();
+
+        /** @brief Mean squared error */
+        static double MSE(const double& target, const double& output);
+    };
 }
 
 #endif

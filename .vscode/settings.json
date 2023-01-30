@@ -8,5 +8,10 @@
         "target/esp32s3.cfg"
     ],
     "idf.pythonBinPathWin": "C:\\Espressif\\python_env\\idf5.0_py3.8_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "C:\\Espressif"
+    "idf.toolsPathWin": "C:\\Espressif",
+    "files.associations": {
+        "vector": "cpp"
+    },
+    "idf.portWin": "COM3",
+    "idf.flashType": "UART"
 }

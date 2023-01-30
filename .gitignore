@@ -6,3 +6,5 @@ build/esp-idf/briand_ai/*
 !build/esp-idf/briand_ai/libbriand_ai.a
 !sdkconfig
 sdkconfig.old
+platform_porting/*
+!platform_porting/Makefile

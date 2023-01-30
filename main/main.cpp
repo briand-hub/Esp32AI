@@ -14,17 +14,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdio>
-
-// Only one header is needed to use library.
-#include "BriandAI.hxx"
-
-// STL and library Namespeces
-using namespace std;
-using namespace Briand; 
+#include  "examples.hxx"
 
 // C++ requires extern "C"
 extern "C" void app_main(void)
 {
+    /* Run examples! */
     
+    test_porting();    
+
+    performance_test();
+
+    example_1();
+    example_2();
+    example_3();
+    example_4();
+    example_5();
+    example_6();
+    example_7();
+    example_8();
+    example_9();
+    example_10();
 }

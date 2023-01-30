@@ -14,5 +14,38 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "BriandInclude.hxx"
+#include "BriandMath.hxx"
 
+using namespace std;
+
+double Briand::Math::Identity(const double& x) {
+    return x;
+}
+
+double Briand::Math::ReLU(const double& x) {
+    return x > 0 ? x : 0;
+}
+
+double Briand::Math::Sigmoid(const double& x) {
+    return 1 / (1 + exp(-1 * x));
+}
+
+double Briand::Math::WeightedSum(const vector<double>& values, const vector<double>& weights) {
+    // Check vector length is equal
+    if (values.size() != weights.size()) throw runtime_error("Briand::ActivationFunctions::WeightedSum - values and weights mismatch size.");
+
+    double sum = 0.0;
+
+    for (uint32_t i = 0; i < values.size(); i++) sum += values.at(i) * weights.at(i);
+
+    return sum; 
+}
+
+double Briand::Math::Random() {
+    return esp_random() / static_cast<double>(UINT32_MAX);
+}
+
+double Briand::Math::MSE(const double& target, const double& output) {
+    //return 0.5 * pow(target-output, 2.0);
+    return 0.5 * (target - output) * (target - output);
+}
