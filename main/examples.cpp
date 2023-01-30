@@ -162,7 +162,9 @@ void performance_test(){
         start = esp_timer_get_time();
     
         auto nn_perc = make_unique<Perceptron>(5, Briand::Math::Identity);
-        result = nn_perc->GetResult();
+        auto inputs = make_unique<vector<double>>();
+        inputs->assign({1, 1, 1, 1, 1});
+        result = nn_perc->Predict(inputs);
 
         took = esp_timer_get_time() - start;
         avg = (i == 0 ? 0 : avg);
@@ -170,7 +172,7 @@ void performance_test(){
         max = (i == 0 ? took : ( took > max ? took : max ));
         avg += (static_cast<double>(took) / static_cast<double>(TESTS));
     } 
-    printf("NN from scratch took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf (expected 5.0)\n", static_cast<long>(avg), min, max, result);
+    printf("5-Input Perceptron took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf (expected 5.0)\n", static_cast<long>(avg), min, max, result);
 
 
 

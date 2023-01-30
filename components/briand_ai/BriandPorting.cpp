@@ -27,7 +27,7 @@
 	void esp_log_level_set(const char* tag, esp_log_level_t level) {
 		// If wildcard, all to level.
 		if (strcmp(tag, "*") == 0) {
-			for (auto it = LOG_LEVELS_MAP.begin(); it != LOG_LEVELS_MAP.end(); ++it) {
+			for (auto it = LOG_LEVELS_MAP->begin(); it != LOG_LEVELS_MAP->end(); ++it) {
 				it->second = level;
 			}
 		}
@@ -257,7 +257,7 @@
 				cout << "Thread #" << i << "(" << tname << ") killed" << endl;
 			} 
 		}
-				
+
 		cout << endl << endl << "*** All threads killed! Exiting. ***" << endl << endl;
 		raise(SIGINT);
 

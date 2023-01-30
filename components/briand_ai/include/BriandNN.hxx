@@ -111,6 +111,8 @@ namespace Briand {
     }; 
 
     /// @brief An empty Neural Network, without layers, neurons and connections.
+    /// Has no particular methods, just basic data structure and propagation forward.
+    /// Use it when you know what you are doing!
     class NeuralNetwork {
         protected:
 
@@ -143,32 +145,26 @@ namespace Briand {
         /// @param activationFunction Activation function to be used (pointer)
         Perceptron(const int& inputs, ActivationFunction activationFunction);
 
-        /// @brief Result from the single output
-        virtual double GetResult();
-
         virtual void PropagateForward() override;
 
         /// @brief Propagate backward
-        /// @param target The target value
-        virtual void PropagateBackward(const double& target);
+        /// @param error The error obtained, to be minimized
+        virtual void PropagateBackward(const double& error);
 
-        /// @brief Do a train (forward and backward)
+        /// @brief Do a training session (forward and backward then backward)
         /// @param inputValues Input values
         /// @param target Expected output
+        /// @param errorFunction Math function f(target, output) to use in order to calculate error for backpropagation
         /// @param error Save error (output parameter)
-        virtual void Train(const unique_ptr<double>& inputValues, const double& target, double& error);
+        virtual void Train(const unique_ptr<vector<double>>& inputValues, const double& target, ErrorFunction errorFunction, double& error);
 
-        //
-        // TODO : remove GetResult(), use GetResult(vector inputs) add Test(...), 
-        //
+        /// @brief Result from the single output (prediction). Method sets inputs, propagates forward and returns the value of output neuron.
+        virtual double Predict(const unique_ptr<vector<double>>& inputValues);
     };
 
     /// @brief Fully connected Neural Network
     class FCNN : public NeuralNetwork {
         protected:
-
-        unique_ptr<vector<double>> _results;
-
 
         public:
 
@@ -187,7 +183,8 @@ namespace Briand {
         virtual void PropagateForward();
         
         /// @brief Propagate backward
-        virtual void PropagateBackward();
+        /// @param error The error obtained, to be minimized
+        virtual void PropagateBackward(const double& error);
     };
 }
 

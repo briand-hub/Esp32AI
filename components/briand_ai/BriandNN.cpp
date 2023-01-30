@@ -129,15 +129,8 @@ Briand::Perceptron::Perceptron(const int& inputs, ActivationFunction activationF
 }
 
 void Briand::Perceptron::PropagateForward() {
-    // Call the base
+    // Call the base, Perceptron has no needs.
     NeuralNetwork::PropagateForward();
-}
-
-double Briand::Perceptron::GetResult() {
-    this->PropagateForward();
-
-    // Return neuron value in the output layer
-    return this->OutputLayer->Neurons->begin()->get()->Value;
 }
 
 void Briand::Perceptron::PropagateBackward(const double& target) {
@@ -146,6 +139,37 @@ void Briand::Perceptron::PropagateBackward(const double& target) {
     //
     throw runtime_error("UNIMPLEMENTED");
 }
+
+double Briand::Perceptron::Predict(const unique_ptr<vector<double>>& inputValues) {
+    // Check
+    if (inputValues == nullptr || inputValues->size() != this->InputLayer->Neurons->size()) throw runtime_error("Briand::Perceptron::Predict - no input values or more/less than network inputs");
+
+    // Set inputs
+    for (long i = 0; i < inputValues->size(); i++) {
+        this->InputLayer->Neurons->at(i)->Value = inputValues->at(i);
+    }
+
+    // Call propagation
+    this->PropagateForward();
+
+    // Return neuron value in the output layer
+    return this->OutputLayer->Neurons->begin()->get()->Value;
+}
+
+void Briand::Perceptron::Train(const unique_ptr<vector<double>>& inputValues, const double& target, ErrorFunction errorFunction, double& error) {
+    // Set input values and propagate forward
+    double output = this->Predict(inputValues);
+
+    // Calculate error
+    error = errorFunction(target, output);
+
+    // Backpropagate
+    this->PropagateBackward(target);
+}
+
+
+
+
 
 
 
