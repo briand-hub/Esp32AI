@@ -190,7 +190,7 @@ Not all are covered by the project, but some are very interesting and funny. For
 
 You can find a (mostly) comprehensive chart [here](https://i.stack.imgur.com/0WL34.jpg), follows details for NN used in project *source: [towardsai.net](https://towardsai.net/p/machine-learning/main-types-of-neural-networks-and-its-applications-tutorial-734480d7ec8e)*.
 
-### Feed Forward (FF):
+#### Feed Forward (FF):
 
 Applications:
 
@@ -203,7 +203,7 @@ Applications:
 
 ![](https://cdn-images-1.medium.com/max/1200/0*fbbKIJ-fxDyCfnd2.png)
 
-## Deep Feed-forward (DFF):
+#### Deep Feed-forward (DFF):
 
 Applications:
 
@@ -215,7 +215,7 @@ Applications:
 
 ![](https://cdn-images-1.medium.com/max/1200/0*06pOOKAQd5KURDZi.png)
 
-## Deep Convolutional Network (DCN):
+#### Deep Convolutional Network (DCN):
 
 Applications:
 
@@ -230,7 +230,7 @@ Applications:
 
 ![](https://cdn-images-1.medium.com/max/1200/0*2EK9jpWmpogvIGet.png)
 
-## Support Vector Machines (SVM):
+#### Support Vector Machines (SVM):
 
 Applications:
 
