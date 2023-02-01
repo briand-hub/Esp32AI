@@ -268,12 +268,17 @@ $$ \overline w = w - \eta * \displaystyle \frac{\partial MSE}{\partial w} $$
 
 *Note: here we use MSE as error calculation but other methods could be used!*
 
-Explained: the new weight will be equal to old weight less than the *magnitude* of the current weight on the error, multiplied by a factor of $\eta$ (the **learning rate**). In other words, we'd like to know how much the weight "costs" on the total error in order to correct it to a lower rate. We will have more chanches to "guess" it faster if a factor of $\eta$ is well "guessed". 
+*Note 2: here I used just one output neuron. If more output neuros, simply calculate error for each one and the total error as the sum of all errors. The steps following must always refer to the total error.*
 
-The $\frac{\partial MSE}{\partial w}$ is the **derivative** of the error respect to the weight.
+Explained: the new weight will be equal to old weight less than the *magnitude* of the current weight on the error, multiplied by a factor of $\eta$ (the **learning rate**). In other words, we'd like to know how much the weight *affects* the total error in order to correct it to a lower rate. We will have more chanches to "guess" it faster if a factor of $\eta$ is well "guessed". 
 
+The $\frac{\partial MSE}{\partial w}$ is the (partial) **derivative** of the error respect to the weight (or the *gradient* of $MSE$ respect to $w$).
 
 #### Backpropagation at output layer
+
+The main "problem" in solving the equation is that the weight $w$ is not *directly* related to the error $E$ but the relationship can be found applying *chain rule* and other math tricks.
+
+TODO
 
 #### Backpropagation at hidden layers
 
