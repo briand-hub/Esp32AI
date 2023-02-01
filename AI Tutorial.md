@@ -12,7 +12,7 @@ We have learned what a sum is when children, counting with fingers. Would it be 
 
 Our brain is, essentialy, a sort of *elecrtonic processor*. Neurons are connected each other by *synapsis* and electric signals are sent between one and the other neuron through those connections. If a neuron is *activated* from incoming electric signals (mV, millivolts) then an electric signal is produced and propagated through the other connections. 
 
-![https://en.wikipedia.org/wiki/Biological_neuron_model#/media/File:Neuron3.png]
+![](https://en.wikipedia.org/wiki/Biological_neuron_model#/media/File:Neuron3.png)
 *Image from Wikipedia*
 
 Such model can be easly converted in a program and the electric processes behind can be enough well translated into math. 
@@ -51,7 +51,8 @@ The first layer is the **input layer** (where we define one or more input for th
 
 Simple network:
 
-![https://miro.medium.com/max/640/0*Bqpea_57RtV-kJ6D.webp]*image from https://miro.medium.com*
+![](https://miro.medium.com/max/640/0*Bqpea_57RtV-kJ6D.webp)
+*image from https://miro.medium.com*
 
 A neural network without any hidden layer (so only input and output) is called **Perceptron**
 A neural network with more than one hidden layer is called **Deep Neural Network (DNN)** and, as the name states, is used in the **Deep Learning**.
@@ -60,34 +61,36 @@ Translating it into simple informatics, a neuron "value" (the circles) can be C+
 
 In schematics:
 
-![https://miro.medium.com/max/640/0*87ax_yzYZp-OUkFL.webp]*image from https://miro.medium.com*
+![](https://miro.medium.com/max/640/0*87ax_yzYZp-OUkFL.webp])
+*image from https://miro.medium.com*
 
-So, this is easy to translate in C++, you can find it in the (header file)[components/briand_ai/include/BriandNN.hxx] 
+So, this is easy to translate in C++, you can find it in the [header file](components/briand_ai/include/BriandNN.hxx)
 
 Generally, if we have a neuron $O$ receiving inputs from $n$ neurons having value of $I$ its "value" (output of the connected neurons) is  given by the easy formula of weighted sum:
 
-$O$ = $ w1*I1 + w2*I2 + w3*I3 + ... + wn*In $
+$$ O = w_{1} * I_{1} + w_{2} * I_{2} + w_{3} * I_{3} + ... + w_{n} * I_{n} $$
 
 Where:
 
  - $i$ is the neuron $i$ of $n$
- - $wi$ is the weight assigned to the connection $i$
- - $Ii$ is the "value" of the neuron $i$
+ - $w_{i}$ is the weight assigned to the connection $i$
+ - $I_{i}$ is the "value" of the neuron $i$
 
 But... if all weights or inputs in a certain moment are all zero? The sum will be zero. And this 0 will be **propagated** to all other, making always output equal to zero. How to avoid this? It's simple, we can add a **bias** in one, two, or all layers (excluding output layer). A bias is a "standalone" neuron who has no inputs but is fully connected to all other neurons in the layer he lies.
 
 
-![https://miro.medium.com/max/640/0*WZ3ejB1QgidBrUak.webp]*image from https://miro.medium.com*
+![](https://miro.medium.com/max/640/0*WZ3ejB1QgidBrUak.webp)
+*image from https://miro.medium.com*
 
 So, the $O$ value calculation changes to:
 
-$$ O = w1*I1 + w2*I2 + w3*I3 + ... + wn*In + wb*b $$ 
+$$ O = w_{1} * I_{1} + w_{2} * I_{2} + w_{3} * I_{3} + ... + w_{n} * I_{n} + w_{b} * b $$ 
 
 Where:
 
  - $i$ is the neuron $i$ of $n$
- - $wi$ is the weight assigned to the connection $i$
- - $Ii$ is the "value" of the neuron $i$
+ - $w_{i}$ is the weight assigned to the connection $i$
+ - $I_{i}$ is the "value" of the neuron $i$
  - $b$ is the bias value
 
 Sometimes bias has no weight associated and it is a fixed value marked with just $b$.
@@ -98,17 +101,18 @@ The output value of the weighted sum could not be good for calculations and neur
 
 So, neuron "value" calculated with the weighted sum must be the argument of the **activation function**. We can write as:
 
-$$ Oact = f( O ) = f( w1*I1 + w2*I2 + w3*I3 + ... + wn*In + wb*b ) $$
+$$ Oact = f( O ) = f( w_{1} * I_{1} + w_{2} * I_{2} + w_{3} * I_{3} + ... + w_{n} * I_{n} + w_{b} * b ) $$
 
 The type of the $f$ function is not a guess, there are some rules to follow for good NN programming.
 
-In project there are the following activation functions (see (header source)[components/briand_ai/include/BriandMath.hxx])
+In project there are the following activation functions (see [header source](components/briand_ai/include/BriandMath.hxx))
 
-#### Sigmoid
+#### Sigmoid (Logistic curve)
 
 $$ Sigmoid(x) = { 1 \over 1 + e^{-x} } $$
 
-![https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Logistic-curve.svg/1200px-Logistic-curve.svg.png]*image from Wikipedia*
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Logistic-curve.svg/400px-Logistic-curve.svg.png)
+*image from Wikipedia*
 
 Sigmoid is widely used in neural networks.
 
@@ -135,24 +139,153 @@ So in hidden layers ReLU will be used in project, in the others sigmoid.
 
 ### Forward propagation
 
-Now that the data structure is ready, we need to understand how data is propagated from inputs to output (**forward propagation**) with the weighted sum. 
+Now that the data structure is ready, we need to understand how data is propagated from inputs to output (**forward propagation**) with the weighted sum. This is done in project by calculating, starting from the first hidden layer (or the output layer if no hidden layer is defined) the value of each Neuron by calling the ``UpdateValue`` method. 
+This method simply reads the ``Inputs`` vector synapsis. Foreach input, multiplied by the Weight, the sum is saved and then the activation function applied. 
 
+This is done starting from the frist layer from the left till the output layer in the right.
 
+When output is ready the **error** can be calculated respect to the **target** output (expected output). For example if output is 1 but we would expect a value of 2 then the error can be calculated.
 
+To calculate the error there are many formulas can be used, however the most used in NN is the Mean Squared Error (**MSE**). Formula (one output, one target) is:
+
+$$ MSE = {1 \over 2} * ( Target - Output )^2 $$
+
+(the $1 \over 2$ factor simplifies next calculation, just accept it as is by now).
+
+### Deep Neural Networks
+
+It seems a difficult term, but the concept is very very easy: while a Perceptron has no hidden layer, a Neural Network has 1 hidden layer. Where there is more than one hidden layer the network is called *Deep* Neural Network.
+
+---
+**&#x1F44B; Find it in the project!**</span>
+
+Math functions: [BriandMath.hxx](components/briand_ai/include/BriandMath.hxx) and [BriandMath.cpp](components/briand_ai/BriandMath.cpp). Math functions can be used then in all NN sources, by defining pointer type:
+
+```C++
+using ActivationFunction =  double (*)(const double& x); // Pointer to an activation function
+using ErrorFunction =  double (*)(const double& target, const double& output); // Pointer to an error calculation function
+```
+
+NN basic classes in [BriandNN.hxx](components/briand_ai/include/BriandNN.hxx) and [BriandNN.cpp](components/briand_ai/BriandNN.cpp)
+
+```C++
+class Neuron; // This is a neuron. It has its value and all inputs synapsis from other neurons in the network. A method of UpdateValue does the value calculation.
+
+class Synapsis; // This is the neuron "link". It connects the Source neuron to the current neuron with a Weight.
+
+class NeuralLayer; // This is an array of neurons. Each layer has a type (input, output, hidden...) and they share the activation function. UpdateNeurons calls UpdateValue for each network in the layer.
+
+class NeuralNetwork; // This is a basic Neural Netowork structure. Every NN has 1 input layer, 0 or more hidden layers, 1 output layer. The PropagateForward method does the forward propagation
+
+class Perceptron; // A perceptron NN. Has one input and output layer.
+```
+
+---
 
 ### Neural network types
 
-short, pics and links 
+Here I paste some very nice images about common neural network types. 
 
-### Forward feeding
+Not all are covered by the project, but some are very interesting and funny. Foreach NN type I will place there some of the common use.
+
+You can find a (mostly) comprehensive chart [here](https://i.stack.imgur.com/0WL34.jpg), follows details for NN used in project *source: [towardsai.net](https://towardsai.net/p/machine-learning/main-types-of-neural-networks-and-its-applications-tutorial-734480d7ec8e)*.
+
+### Feed Forward (FF):
+
+Applications:
+
+ - Data Compression.
+ - Pattern Recognition.
+ - Computer Vision.
+ - Sonar Target Recognition.
+ - Speech Recognition.
+ - Handwritten Characters Recognition.
+
+![](https://cdn-images-1.medium.com/max/1200/0*fbbKIJ-fxDyCfnd2.png)
+
+## Deep Feed-forward (DFF):
+
+Applications:
+
+ - Data Compression.
+ - Pattern Recognition.
+ - Computer Vision.
+ - ECG Noise Filtering.
+ - Financial Prediction.
+
+![](https://cdn-images-1.medium.com/max/1200/0*06pOOKAQd5KURDZi.png)
+
+## Deep Convolutional Network (DCN):
+
+Applications:
+
+ - Identify Faces, Street Signs, Tumors.
+ - Image Recognition.
+ - Video Analysis.
+ - NLP.
+ - Anomaly Detection.
+ - Drug Discovery.
+ - Checkers Game.
+ - Time Series Forecasting.
+
+![](https://cdn-images-1.medium.com/max/1200/0*2EK9jpWmpogvIGet.png)
+
+## Support Vector Machines (SVM):
+
+Applications:
+
+ - Face Detection.
+ - Text Categorization.
+ - Classification.
+ - Bioinformatics.
+ - Handwriting recognition.
+
+![](https://cdn-images-1.medium.com/max/1200/0*w2fuNgfTLExx1jlL.png)
+
+## Machine Learning with Neural Network
+
+So, at this point you should have in mind the structure and architecture of a Neural Network, how inputs are given and how output is generated. However this is nothing else than a simple and easy calculation (even wrong most of time). You also may have in mind some questions like *how to choose right weights values?* or *which bias value should I set?*. Well answer is just this: **do not worry, your computer will find the right ones itself**. What!? How is this possible? 
+
+This process is just a series of math equations done once, twice and so on for a long time of **epochs** in order to let the computer find by itself the right values. This process is called **training** and the core of the training and the **learning** process is the **backpropagation**.
 
 ### Backpropagation
 
-### Most used functions and derivatives
+We discussed about *forward* propagation where input layer values are driven through the network to the output layer. When we have our output we can calculate an error (remember, the $MSE$) given the expected target value.
 
-## Deep learning
+This error tells us *how much* we are wrong. We would like to say each neuron of the previous layer this error too in order to adjust each synapsis weight to obtain a lower error. Then, neuros should do that for the previous layer again and again till reaching the input. After that all weights will be updated (we don't have to worry about neuron's value because they depend on weights).
 
-what is, scheme for my remarks
+Done that, a forward propagation with updated weights will give a more precise output (with a lower error). We can repeat the process ($epoch$ times) until the error is as low as zero. 
+
+This method found its base on the **gradient descent** algorithm. The idea is very simple: we would like a costant lower error at each epoch, this can be done with the math: in fact, the *derivative* of any fuctions tells us when the function is getting higher or lower and when zero, it is a (local) minimum. So we can use that to find the lowest possible error. 
+
+In the case of a single neuron output layer, given a target output $T$, the current output $O$, in order to calculate the error we use the $MSE$ formula:
+
+$$ MSE = {1 \over 2} * ( T - O )^2 $$
+
+Then we want to know *how much* of that error is related to each previous-layer synapsis in order to change the weight and get a lower error. We define also that the new weight $\overline w$ is given by this formula:
+
+$$ \overline w = w - \eta * \displaystyle \frac{\partial MSE}{\partial w} $$
+
+*Note: here we use MSE as error calculation but other methods could be used!*
+
+Explained: the new weight will be equal to old weight less than the *magnitude* of the current weight on the error, multiplied by a factor of $\eta$ (the **learning rate**). In other words, we'd like to know how much the weight "costs" on the total error in order to correct it to a lower rate. We will have more chanches to "guess" it faster if a factor of $\eta$ is well "guessed". 
+
+The $\frac{\partial MSE}{\partial w}$ is the **derivative** of the error respect to the weight.
+
+
+#### Backpropagation at output layer
+
+#### Backpropagation at hidden layers
+
+#### Resources and further reading
+
+You can find an example (very well written) [here](https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/) about gradient descent algorithm applied to backpropagation step-by-step with all maths.
+
+### An operative example
+
+### Most used functions and their derivatives
+
+### My name is $\eta$: *learning rate*, for friends.
 
 ## What is a Convolutional Neural Network (CNN)
 
