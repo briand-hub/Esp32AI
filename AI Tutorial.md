@@ -286,6 +286,8 @@ TODO
 
 You can find an example (very well written) [here](https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/) about gradient descent algorithm applied to backpropagation step-by-step with all maths.
 
+Also [here](https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c) there is a good tutorial with matrix calculations.
+
 ### An operative example
 
 ### Most used functions and their derivatives
