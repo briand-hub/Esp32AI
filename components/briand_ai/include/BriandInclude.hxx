@@ -163,7 +163,7 @@
 			ESP_LOG_VERBOSE     /*!< Bigger chunks of debugging information, or frequent messages which can potentially flood the output. */
 		} esp_log_level_t;
 
-		extern map<string, esp_log_level_t> LOG_LEVELS_MAP;
+		extern unique_ptr<map<string, esp_log_level_t>> LOG_LEVELS_MAP;
 		void esp_log_level_set(const char* tag, esp_log_level_t level);
 		esp_log_level_t esp_log_level_get(const char* tag);
 		#define ESP_LOGI(tag, _format, ...) { if(esp_log_level_get(tag) >= ESP_LOG_INFO) { printf("I "); printf(tag); printf(" "); printf(_format, ##__VA_ARGS__); } }

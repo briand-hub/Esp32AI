@@ -22,7 +22,7 @@
 		return "UNDEFINED ON LINUX PLATFORM";
 	}
 
-	map<string, esp_log_level_t> LOG_LEVELS_MAP;
+	unique_ptr<map<string, esp_log_level_t>> LOG_LEVELS_MAP;
 	
 	void esp_log_level_set(const char* tag, esp_log_level_t level) {
 		// If wildcard, all to level.
@@ -32,19 +32,19 @@
 			}
 		}
 		else {
-			LOG_LEVELS_MAP[string(tag)] = level;
+			(*LOG_LEVELS_MAP.get())[string(tag)] = level;
 		}
 	}
 
 	esp_log_level_t esp_log_level_get(const char* tag) {
-		auto it = LOG_LEVELS_MAP.find(string(tag));
+		auto it = LOG_LEVELS_MAP->find(string(tag));
 		
-		if (it == LOG_LEVELS_MAP.end()) {
+		if (it == LOG_LEVELS_MAP->end()) {
 			// Create
-			LOG_LEVELS_MAP[string(tag)] = ESP_LOG_NONE;
+			(*LOG_LEVELS_MAP.get())[string(tag)] = ESP_LOG_NONE;
 		}
 		
-		return LOG_LEVELS_MAP[string(tag)];
+		return (*LOG_LEVELS_MAP.get())[string(tag)];
 	}
 
 	void ESP_ERROR_CHECK(esp_err_t e) { /* do nothing */ }
@@ -205,6 +205,9 @@
 		// srand for esp_random()
 		srand(time(NULL));
 
+		// Initialization
+		LOG_LEVELS_MAP = make_unique<map<string, esp_log_level_t>>();
+
 		// Add this to the logging utils in order to deactivate output if necessary
 		esp_log_level_set("ESPLinuxPorting", ESP_LOG_NONE);
 
@@ -257,6 +260,9 @@
 				cout << "Thread #" << i << "(" << tname << ") killed" << endl;
 			} 
 		}
+
+		LOG_LEVELS_MAP.reset();
+		BRIAND_TASK_POOL.reset();
 
 		cout << endl << endl << "*** All threads killed! Exiting. ***" << endl << endl;
 		raise(SIGINT);
