@@ -38,6 +38,8 @@ The tutorial is strictly related with the project, each major chapter has a "see
 
 Unique and easy to use header file for the entire library. Just  ``#include "BriandAI.hxx"`` and you are ready to go with your C++ software.
 
+Under namespace *Briand::SimpleNN* a very simple and easy to understand (conceptual) NN data structure is created from scratch, while the *Briand::FCNN* and *Briand::CNN* objects are more realistic (matrix) NN data structures.
+
 ### Library structure
 
 All is under *Briand* namespace. Project folders and files:
@@ -48,13 +50,15 @@ All is under *Briand* namespace. Project folders and files:
 |   |--+ include
     |  |-- BriandAI.hxx          Unique header to include in project
     |  |-- BriandInclude.hxx     Unique header to be included inside library files with non-esp platform porting 
-    |  |-- BriandNN.hxx          Neural Network library header
+    |  |-- BriandSimpleNN.hxx    Simple, concetptual Neural Network library header (namespace Briand::SimpleNN)
+    |  |-- BriandFCNN.hxx        Fully connected Neural Network library header
     |  |-- BriandCNN.hxx         Convolutional Neural Network library header
     |  |-- BriandMath.hxx        Math library (functions needed) header
     |  |-- BriandMatrix.hxx      Matrix library header
     |  |-- BriandImage.hxx       Image library header1
     |
-    |-- BriandNN.cpp             Sources
+    |                            Sources (cpp)
+    |-- BriandSimpleNN.cpp       
     |-- BriandCNN.cpp
     |-- BriandMath.cpp
     |-- BriandMatrix.cpp
@@ -65,6 +69,8 @@ All is under *Briand* namespace. Project folders and files:
 ```
 
 ## Example projects and tests
+
+In the [examples.cpp](main/examples.cpp) source many examples, organized in voids can be found. In the default [main.cpp](main/main.cpp) file all examples are run at once (including performance tests). In the performance test other useful examples can be found.
 
 ## Using on ESP32
 
@@ -99,10 +105,10 @@ Tested on ESP32-S3 WROOM (by Freenove kit)
 
  - [x] Start project and organize
  - [ ] Include tutorial on development and my notes/remarks about AI
- - [ ] Linux/Windows compatibility with porting library
+ - [x] Linux/Windows compatibility with porting library
  - [x] Decide sample project for starting
- - [ ] NN basics
- - [ ] NN tests 
+ - [x] NN basics
+ - [x] NN tests 
  - [ ] Deep learning basics
  - [ ] Deep learning tests
  - [ ] CNN basics

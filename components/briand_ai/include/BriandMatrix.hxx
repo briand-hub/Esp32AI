@@ -52,10 +52,8 @@ namespace Briand {
         /// @param initialValue initial value for elements (default 0)
         Matrix(const int& rows, const int& cols, const double& initialValue = 0.0);
 
-        /// @brief Build a new matrix RxC with given input
-        /// @param rows 
-        /// @param cols 
-        /// @param initialValue initial value for elements (default 0)
+        /// @brief Build a new matrix RxC with given input initialization matrix
+        /// @param m initial values
         Matrix(const std::initializer_list<std::initializer_list<double>>& m);
 
         ~Matrix();
@@ -74,17 +72,18 @@ namespace Briand {
 
         /// @brief Multiply current matrix by a vector
         /// @param v vector
-        /// @param size vector size
-        void MultiplyVector(const double*& v, const unsigned int& size);
-
-        /// @brief Multiply current matrix by a vector
-        /// @param v vector
-        void MultiplyVector(const vector<double>& v);
+        /// @return Pointer to resulting vector
+        unique_ptr<vector<double>> MultiplyVector(const vector<double>& v);
 
         /// @brief Multiply current matrix with other (dot operation). If input matrix is m*n other matrix must be n*p. Result will be a m*p matrix.
         /// @param other Matrix 
         /// @return new matrix
         unique_ptr<Matrix> MultiplyMatrix(const Matrix& other);
+
+        /// @brief Multiply current matrix with other (Hadamard product). 
+        /// If input matrix is m*n a(i,j) elements other matrix must be m*n b(i,j) elements. Result will be a m*n matrix where elements are a(i,j)*b(i,j).
+        /// @param other Matrix 
+        unique_ptr<Matrix> MultiplyMatrixHadamard(const Matrix& other);
 
         /// @brief Apply f() function to all matrix elements
         /// @param f the function to apply f(x)

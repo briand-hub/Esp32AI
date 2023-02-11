@@ -14,21 +14,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "BriandNN.hxx"
+#include "BriandSimpleNN.hxx"
+#include "BriandMath.hxx"
 
 using namespace std;
+using namespace Briand::SimpleNN;
 
-Briand::Neuron::Neuron() {
+
+Briand::SimpleNN::Neuron::Neuron() {
     this->Inputs = make_unique<vector<unique_ptr<Synapsis>>>();
 }
 
-Briand::Neuron::Neuron(const double& value) : Neuron() {
+Briand::SimpleNN::Neuron::Neuron(const double& value) : Neuron() {
     this->Value = value;
     // ID to zero
     this->Id = 0;
 }
 
-void Briand::Neuron::UpdateValue(ActivationFunction activationFunction) {
+void Briand::SimpleNN::Neuron::UpdateValue(ActivationFunction activationFunction) {
     // Nothing to do?
     if (this->Inputs == nullptr || this->Inputs->size() == 0) return;
 
@@ -45,7 +48,7 @@ void Briand::Neuron::UpdateValue(ActivationFunction activationFunction) {
     this->Value = activationFunction(this->Value);
 }
 
-void Briand::Neuron::ConnectTo(const unique_ptr<Neuron>& other, double weight /*= 1.0*/) {
+void Briand::SimpleNN::Neuron::ConnectTo(const unique_ptr<Neuron>& other, double weight /*= 1.0*/) {
     if (other == nullptr) throw runtime_error("Briand::Neuron::ConnectTo - cannot connect to nothing.");
 
     // Create a new Synapsis (I am the source)
@@ -61,7 +64,7 @@ void Briand::Neuron::ConnectTo(const unique_ptr<Neuron>& other, double weight /*
     //
 }
 
-Briand::NeuralLayer::NeuralLayer(const LayerType& type, ActivationFunction activationFunction) {
+Briand::SimpleNN::NeuralLayer::NeuralLayer(const LayerType& type, ActivationFunction activationFunction) {
     // Initialize neurons with empty vector
     this->Neurons = make_unique<vector<unique_ptr<Neuron>>>();
     
@@ -69,18 +72,18 @@ Briand::NeuralLayer::NeuralLayer(const LayerType& type, ActivationFunction activ
     this->_activationFunction = activationFunction;
 }
 
-void Briand::NeuralLayer::UpdateNeurons() {
+void Briand::SimpleNN::NeuralLayer::UpdateNeurons() {
     // For each neuron inside this layer, update value and activate
     for (auto neuron = this->Neurons->begin(); neuron != this->Neurons->end(); neuron++) {
         neuron->get()->UpdateValue(this->_activationFunction);
     }
 }
 
-Briand::NeuralNetwork::NeuralNetwork() {
+Briand::SimpleNN::NeuralNetwork::NeuralNetwork() {
     // Do not do anything!
 }
 
-void Briand::NeuralNetwork::PropagateForward() {
+void Briand::SimpleNN::NeuralNetwork::PropagateForward() {
     // This must calculate values from inputs to outputs.
 
     // If no input or output layer has neurons, throw an error
@@ -103,7 +106,7 @@ void Briand::NeuralNetwork::PropagateForward() {
     // After that output layer neurons will have the output value
 }
 
-Briand::Perceptron::Perceptron(const int& inputs, ActivationFunction activationFunction) {
+Briand::SimpleNN::Perceptron::Perceptron(const int& inputs, ActivationFunction activationFunction) {
     // Inputs must be valid
     if (inputs <= 0) throw runtime_error("Briand::Perceptron::Perceptron - inputs must be greater than 0.");
 
@@ -128,19 +131,19 @@ Briand::Perceptron::Perceptron(const int& inputs, ActivationFunction activationF
     this->OutputLayer->Neurons->push_back(std::move(out));
 }
 
-void Briand::Perceptron::PropagateForward() {
+void Briand::SimpleNN::Perceptron::PropagateForward() {
     // Call the base, Perceptron has no needs.
     NeuralNetwork::PropagateForward();
 }
 
-void Briand::Perceptron::PropagateBackward(const double& target) {
+void Briand::SimpleNN::Perceptron::PropagateBackward(const double& target) {
     //
     // TODO
     //
     throw runtime_error("UNIMPLEMENTED");
 }
 
-double Briand::Perceptron::Predict(const unique_ptr<vector<double>>& inputValues) {
+double Briand::SimpleNN::Perceptron::Predict(const unique_ptr<vector<double>>& inputValues) {
     // Check
     if (inputValues == nullptr || inputValues->size() != this->InputLayer->Neurons->size()) throw runtime_error("Briand::Perceptron::Predict - no input values or more/less than network inputs");
 
@@ -156,7 +159,7 @@ double Briand::Perceptron::Predict(const unique_ptr<vector<double>>& inputValues
     return this->OutputLayer->Neurons->begin()->get()->Value;
 }
 
-void Briand::Perceptron::Train(const unique_ptr<vector<double>>& inputValues, const double& target, ErrorFunction errorFunction, double& error) {
+void Briand::SimpleNN::Perceptron::Train(const unique_ptr<vector<double>>& inputValues, const double& target, ErrorFunction errorFunction, double& error) {
     // Set input values and propagate forward
     double output = this->Predict(inputValues);
 
@@ -166,10 +169,4 @@ void Briand::Perceptron::Train(const unique_ptr<vector<double>>& inputValues, co
     // Backpropagate
     this->PropagateBackward(target);
 }
-
-
-
-
-
-
 

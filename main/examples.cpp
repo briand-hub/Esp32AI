@@ -23,7 +23,7 @@
 
 // STL and library Namespeces
 using namespace std;
-using namespace Briand; 
+using namespace Briand;
 
 /** @brief Porting test */
 void test_porting() {
@@ -85,11 +85,52 @@ void performance_test(){
     } 
     printf("Matrix 5x7 multiply by 7x3 took: AVG = %ldus MIN = %ldus MAX = %luus.\n", static_cast<long>(avg), min, max, random);
 
+    m1 = make_unique<Matrix>(5, 7, 2.2);
+    for (uint8_t i = 0; i<TESTS; i++) {
+        auto vin = make_unique<vector<double>>(7, 0.5);
+        start = esp_timer_get_time();
+        auto vout = m1->MultiplyVector(*vin.get());
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("Matrix 5x7 multiply by vector of 7 elements took: AVG = %ldus MIN = %ldus MAX = %luus.\n", static_cast<long>(avg), min, max, random);
+
+    m1 = make_unique<Matrix>(5, 7, 2);
+    m2 = make_unique<Matrix>(5, 7, 2);
+    for (uint8_t i = 0; i<TESTS; i++) {
+        start = esp_timer_get_time();
+        m3 = m1->MultiplyMatrixHadamard(*m2.get());
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("Matrix 5x7 Hadamard product took: AVG = %ldus MIN = %ldus MAX = %luus.\n", static_cast<long>(avg), min, max, random);
+
+    /* tests
+
+    {
+        m1 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} } ));
+        auto vin = make_unique<vector<double>>(3, 0.5);
+        auto vout = m1->MultiplyVector(*vin.get());
+        printf("\n\nVOUT = ");
+        for (int i =0; i<vout->size(); i++) printf("%lf ", vout->at(i));
+        printf("\n\n");
+    }
+
     m1 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} } ));
     m2 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {3, 5}, {2, 0}, {6, 1} } ));
 
     m3 = m1->MultiplyMatrix(*m2.get());
     m3->Print();
+
+    m1 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} } ));
+
+    */
 
     m1.reset();
     m2.reset();
@@ -163,23 +204,23 @@ void performance_test(){
     printf("Weighted sum of 100 elements took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf\n", static_cast<long>(avg), min, max, result);
 
     //
-    // NN Creation from scratch (perceptron)
+    // Simple NN Creation from scratch (perceptron)
     //
 
     for (uint8_t i = 0; i<TESTS; i++) {
         start = esp_timer_get_time();
         
-        auto nn_scratch = make_unique<NeuralNetwork>();
-        auto input1 = make_unique<Neuron>(1.0);
-        auto input2 = make_unique<Neuron>(1.0);
-        auto output = make_unique<Neuron>(0.0);
+        auto nn_scratch = make_unique<Briand::SimpleNN::NeuralNetwork>();
+        auto input1 = make_unique<Briand::SimpleNN::Neuron>(1.0);
+        auto input2 = make_unique<Briand::SimpleNN::Neuron>(1.0);
+        auto output = make_unique<Briand::SimpleNN::Neuron>(0.0);
 
         // Connect inputs to output
         input1->ConnectTo(output, 1.0);
         input2->ConnectTo(output, 1.0);
 
         // Add an input layer with identity activation
-        nn_scratch->InputLayer = make_unique<NeuralLayer>(Briand::LayerType::Input, Briand::Math::Identity);
+        nn_scratch->InputLayer = make_unique<Briand::SimpleNN::NeuralLayer>(Briand::LayerType::Input, Briand::Math::Identity);
 
         // Add two inputs to the input layer
 
@@ -187,7 +228,7 @@ void performance_test(){
         nn_scratch->InputLayer->Neurons->push_back(std::move(input2));
         
         // Add an output layer with identity activation
-        nn_scratch->OutputLayer = make_unique<NeuralLayer>(Briand::LayerType::Input, Briand::Math::Identity);
+        nn_scratch->OutputLayer = make_unique<Briand::SimpleNN::NeuralLayer>(Briand::LayerType::Input, Briand::Math::Identity);
 
         // Add one output neuron to output layer
         nn_scratch->OutputLayer->Neurons->push_back(std::move(output));
@@ -214,7 +255,7 @@ void performance_test(){
 
         start = esp_timer_get_time();
     
-        auto nn_perc = make_unique<Perceptron>(5, Briand::Math::Identity);
+        auto nn_perc = make_unique<Briand::SimpleNN::Perceptron>(5, Briand::Math::Identity);
         auto inputs = make_unique<vector<double>>();
         inputs->assign({1, 1, 1, 1, 1});
         result = nn_perc->Predict(inputs);
@@ -227,11 +268,44 @@ void performance_test(){
     } 
     printf("5-Input Perceptron took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf (expected 5.0)\n", static_cast<long>(avg), min, max, result);
 
-
+    // 
+    // Perceptron Propagation
+    // 
 
     // 
-    // NN Propagation
+    // Perceptron BackPropagation
     // 
+
+    // 
+    // Perceptron Train
+    // 
+
+    // 
+    // FCNN Creation and propagation
+    // 
+
+    unique_ptr<Briand::FCNN> fcnn;
+
+    for (uint8_t i = 0; i<TESTS; i++) {
+        // Calculate output
+
+        start = esp_timer_get_time();
+        fcnn = make_unique<Briand::FCNN>();
+        fcnn->AddInputLayer(2, {1, 1});
+        fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {0.5, 0.5}, { 0.5, 0.5 } });
+        fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {2, 2}, { 2, 2 } });
+        fcnn->AddOutputLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, Briand::Math::MSE, { {0.1, 0.2}, { 0.1, 0.1 } });
+        fcnn->Propagate();
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("FCNN(2,2,2,2) took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf (expected 5.0)\n", static_cast<long>(avg), min, max, result);
+
+    fcnn->PrintResult();
+
 
     printf("***********************************************************\n\n\n");    
 }

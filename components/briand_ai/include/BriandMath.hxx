@@ -32,13 +32,16 @@ namespace Briand {
         public:
 
         /** @brief Identity f(x) = x */
-        static double Identity(const double& x);
+        static constexpr double Identity(const double& x) { return x; }
+        
+        /** @brief Identity derivative f'(x) = 1 */
+        static constexpr double DeIdentity(const double& x) { return 1; }
 
         /** @brief ReLU function */
-        static double ReLU(const double& x);
+        static constexpr double ReLU(const double& x) { return x > 0 ? x : 0; }
 
         /** @brief Sigmoid function */
-        static double Sigmoid(const double& x);
+        static constexpr double Sigmoid(const double& x) { return 1 / (1 + exp(-1 * x)); }
 
         /** @brief Weighted sum function */
         static double WeightedSum(const vector<double>& values, const vector<double>& weights);
@@ -47,8 +50,17 @@ namespace Briand {
         static double Random();
 
         /** @brief Mean squared error */
-        static double MSE(const double& target, const double& output);
+        static constexpr double MSE(const double& target, const double& output) { return 0.5 * (target - output) * (target - output); }
     };
+
+    /// @brief Typedef (alias with C++ using) an activation function as a function returning a double and asking a const double& as parameter
+    using ActivationFunction =  double (*)(const double&);
+
+    /// @brief Typedef (alias with C++ using) an error calculation function as a function returning a double and asking two const double& as parameters (TARGET and OUTPUT)
+    using ErrorFunction =  double (*)(const double&, const double&);
+
+    /** @brief The NN layer type (input, hidden, output ...) */
+    enum class LayerType { Input, Hidden, Output, Kernel, Pooling };
 }
 
 #endif

@@ -20,22 +20,18 @@
 #define BRIAND_NN_H
 
 #include "BriandInclude.hxx"
+#include "BriandMath.hxx"
 
 using namespace std;
 
-namespace Briand {
+/// @brief This namespace contains simple, conceptual, Neural Network design.
+namespace Briand::SimpleNN {
 
     // Early declaration of Synapsis class needed in Neuron.
     class Synapsis;
 
     // Define an activation function type as a pointer to function that returns a double
     // by taking input with
-
-    /// @brief Typedef (alias with C++ using) an activation function as a function returning a double and asking a const double& as parameter
-    using ActivationFunction =  double (*)(const double&);
-
-    /// @brief Typedef (alias with C++ using) an error calculation function as a function returning a double and asking two const double& as parameters (TARGET and OUTPUT)
-    using ErrorFunction =  double (*)(const double&, const double&);
 
     /** @brief A neuron */
     class Neuron {
@@ -82,9 +78,6 @@ namespace Briand {
         /** @brief Connection weight. If this is an input, Weight must be always 1. */
         double Weight;
     };
-
-    /** @brief The NN layer type (input, hidden, output ...) */
-    enum class LayerType { Input, Hidden, Output, Kernel, Pooling };
 
     /** @brief A layer of neurons */
     class NeuralLayer {
@@ -162,30 +155,6 @@ namespace Briand {
         virtual double Predict(const unique_ptr<vector<double>>& inputValues);
     };
 
-    /// @brief Fully connected Neural Network
-    class FCNN : public NeuralNetwork {
-        protected:
-
-        public:
-
-        /// @brief Set (or reset) the input layer
-        /// @param inputs All input values
-        virtual void SetInputLayer(const unique_ptr<double>& input);
-
-        /// @brief Set (or reset) the number of output neurons
-        /// @param outputs Number of output neurons
-        virtual void SetOutputLayer(const int& outputs);
-
-        /// @brief Adds an hidden layer
-        virtual void AddHiddenLayer();
-
-        /// @brief Connect all the network and propagate. Results can be obtained with
-        virtual void PropagateForward();
-        
-        /// @brief Propagate backward
-        /// @param error The error obtained, to be minimized
-        virtual void PropagateBackward(const double& error);
-    };
 }
 
 #endif

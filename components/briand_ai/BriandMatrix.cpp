@@ -77,7 +77,7 @@ void Matrix::MultiplyScalar(const double& k) {
 
 unique_ptr<Matrix> Matrix::MultiplyMatrix(const Matrix& other) {
     // Condition: A x B is possible if number of cols in A equals the number of rows in B
-    if (other.Rows() != this->Cols()) throw runtime_error("Matrix A(m,n)*B(n,p) failed: n has different value!");
+    if (other.Rows() != this->Cols()) throw out_of_range("Matrix A(m,n)*B(n,p) failed: n has different value!");
 
     // A(m,n) * B(n,p) = C(m,p)
     auto result = make_unique<Matrix>(this->_rows, other.Cols(), 0.0); 
@@ -94,13 +94,40 @@ unique_ptr<Matrix> Matrix::MultiplyMatrix(const Matrix& other) {
     return std::move(result);
 }
 
-void Matrix::MultiplyVector(const double*& v, const unsigned int& size) {
-    throw runtime_error("Unimplemented");
+unique_ptr<Matrix> Matrix::MultiplyMatrixHadamard(const Matrix& other) {
+    // Condition: A x B is possible if number of cols in A equals the number of rows in B
+    if (other.Rows() != this->Rows()) throw out_of_range("Matrix A(m,n)*B(m,n) Hadamard failed: m has different value!");
+    if (other.Cols() != this->Cols()) throw out_of_range("Matrix A(m,n)*B(m,n) Hadamard failed: n has different value!");
 
+    // A(m,n) * B(m,n) = C(m,n)
+    auto result = make_unique<Matrix>(this->_rows, this->_cols, 0.0); 
+
+    const unsigned int N = other.Rows();
+
+    for (unsigned int i = 0; i < result->Rows(); i++) {
+        for (unsigned int j = 0; j < result->Cols(); j++) {
+            (*result.get())[i][j] += (*this)[i][j] * other[i][j];
+        }
+    }
+
+    return std::move(result);
 }
 
-void Matrix::MultiplyVector(const vector<double>& v) {
-    throw runtime_error("Unimplemented");
+unique_ptr<vector<double>> Matrix::MultiplyVector(const vector<double>& v) {
+    // Condition: A x v is possible if number of cols in A equals the number of components in v
+    if (v.size() != this->Cols()) throw out_of_range("Matrix A(m,n)*v(n) failed: n has different value!");
+
+    auto r = make_unique<vector<double>>();
+
+    for (unsigned int i = 0; i < this->Rows(); i++) {
+        double ri = 0;
+        for (unsigned int j = 0; j < this->Cols(); j++) {
+            ri += this->_matrix[i][j] * v[j];
+        }
+        r->push_back(ri);
+    }
+
+    return std::move(r);
 }
 
 void Matrix::ApplyFunction(double (*f)(const double& x)) {
