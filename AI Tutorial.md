@@ -252,7 +252,7 @@ This process is just a series of math equations done once, twice and so on for a
 
 We discussed about *forward* propagation where input layer values are driven through the network to the output layer. When we have our output we can calculate an error (remember, the $MSE$) given the expected target value.
 
-This error tells us *how much* we are wrong. We would like to say each neuron of the previous layer this error too in order to adjust each synapsis weight to obtain a lower error. Then, neuros should do that for the previous layer again and again till reaching the input. After that all weights will be updated (we don't have to worry about neuron's value because they depend on weights).
+This error tells us *how much* we are wrong. We would like to communicate to each neuron of the previous layer this error in order to adjust each synapsis weight to obtain a lower error. Then, should do the same for the previous layer again and again till reaching the input. After that all weights will be updated (we don't have to worry about neuron's value because they depend on weights). If we can translate this into math equations then we can "teach" to our NN how to *self-adjust* or *learn from error*.
 
 Done that, a forward propagation with updated weights will give a more precise output (with a lower error). We can repeat the process ($epoch$ times) until the error is as low as zero. 
 
@@ -274,19 +274,97 @@ Explained: the new weight will be equal to old weight less than the *magnitude* 
 
 The $\frac{\partial MSE}{\partial w}$ is the (partial) **derivative** of the error respect to the weight (or the *gradient* of $MSE$ respect to $w$).
 
-#### Backpropagation at output layer
+#### Concepts - Backpropagation at output layer
 
 The main "problem" in solving the equation is that the weight $w$ is not *directly* related to the error $E$ but the relationship can be found applying *chain rule* and other math tricks.
 
-TODO
+I'll choose to follow the example from [Matt Mazur](https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/) because I think is very well written and explains well all math behind for a beginner.
 
-#### Backpropagation at hidden layers
+In following formulas I refer to:
+
+ - $f$ as the activation function
+ - $f^{'}$ as the derivative of the activation function
+ - $X_{inet}$ As the "net value" of a neuron $X_{i}$ (so, just the weighted sum of its inputs)
+ - $X_{iout}$ As the "out value" of a neuron $X_{i}$, or $f(X_{inet})$ (so the activation function applied to weighted sum)
+ - $E$ as the total error, calculated as $MSE$.
+ - $T$ as the target value.
+ - $w_{i}$ as the weight
+
+Back to us... we forward propagated and we have got the output $O_{out}$ with an error of $E$. Suppose a netowrk done in this way:
+
+![](tutorial_imgs/NNback1.png)
+
+*Note: of course consider all weights and so on, but for tutorial and demonstration purposes only w1, w3 and w3 are shown.*
+
+Now we want to "go back" using gradient descent algorithm. Taking the output node we want to know how much error is driven from the $w_{3}$. So we write this as $\displaystyle \frac{\partial E}{\partial w_{3}}$. Now we notice that:
+
+![](tutorial_imgs/NNback2.png)
+
+So, in order to reach $w_{3}$ "from" $E$ (the solid green arrow) we have to do three steps (three green arrows, or the *chain rule*): 
+
+![](tutorial_imgs/NNback3.png)
+
+Translate the arrows into math we have to write:
+
+$$\displaystyle \frac{\partial E}{\partial w_{3}} = \frac{\partial E}{\partial O_{out}} * \frac{\partial O_{out}}{\partial O_{net}} * \frac{\partial O_{net}}{\partial w_{3}} $$
+
+Now we notice that calculating error as the MSE (multiplied by $1\over2$) the derivative of the error is always $(O_{out} - T)$. This is the first term of the equation. Then the second term is, simply, the derivative of the choosen activation function $f$, so we have $f^{'}(O_{out})$ as the second term. Tha latest is the derivative of a weighted sum respect to $w_{3}$ (thus, all constants => zero) and this leds to the ${\partial (k+ .. + H_{2out}w_{3} + ... +k)} = H_{2out}$. So:
+
+$$\displaystyle \frac{\partial E}{\partial w_{3}} = (O_{out} - T)*f^{'}(O_{out})*H_{2out} $$
+
+*Note: see derivative in next sections in order to understand $f^{'}$ calculation.*
+
+Given that, update the weight with the final formula:
+
+$$ \overline w_{3} = w_{3} - \eta * (O_{out} - T)*f^{'}(O_{out})*H_{2out} $$
+
+#### Concepts - Backpropagation at hidden and input layers
+
+With hidden layers the procedure does not change so much. In fact, we always have out error $E$ but now we want to know how much $w_{2}$ affected error. So:
+
+![](tutorial_imgs/NNback4.png)
+
+$$\displaystyle \frac{\partial E}{\partial w_{2}} = \frac{\partial E}{\partial H_{2out}} * \frac{\partial H_{2out}}{\partial H_{2net}} * \frac{\partial H_{2net}}{\partial w_{2}} $$
+
+Rember that the second term is always the derivative of the layer's activation function (to simplify we just call it once a time $f^{'}$ even if it could be a different function!). Also remember that the third term is always the weighted sum and this leds to:
+
+$$\displaystyle \frac{\partial E}{\partial w_{2}} = \frac{\partial E}{\partial H_{2out}} *  f^{'}(H_{2out}) * H_{1out} $$
+
+Here the first term is intended to be how much error respect to the output of $H_2{2}$ and then we have to apply chain rule again as $H_{2out}$ depends on the *previous* (*next*, going forward) weighted sum from $O_{net}$. This is written as:
+
+$$\displaystyle \frac{\partial E}{\partial H_{2out}} = \frac{\partial E}{\partial O_{net}} * \frac{\partial O_{net}}{\partial H_{2out}}$$
+
+The second term is $w_{3}$ fo course, and the first term can be obtain, again (*yes I know...*) with chain rule:
+
+$$\displaystyle \frac{\partial E}{\partial O_{net}} = \frac{\partial E}{\partial O_{out}} * \frac{\partial O_{out}}{\partial O_{net}}$$
+
+Byt hey! We have these values from the previous calculations! Therefore:
+
+$$\displaystyle \frac{\partial E}{\partial w_{2}} = ( (O_{out}-T)*f^{'}(O_{out}) ) * f^{'}(H_{2out}) * H_{1out} $$
+
+Then:
+
+$$ \overline w_{2} = w_{2} - \eta * (O_{out}-T)*f^{'}(O_{out}) * f^{'}(H_{2out}) * H_{1out}  $$
+
+We can proceed with the latest layer, the input layer. However procedure does not change so much, the final equation would be "longer" and more complex. The main focus of this part is to understand how gradient descent is calculated and its concept.
+
+However to generalize this iteration matrix model is easier and can cover any kind of NN with the same procedure. In fact we could have any number of inputs, hidden layers and neurons (in any mix), output neurons and bias neurons. In order to give a generalized algorithm matrix model comes easier.
+
+
+#### General backpropagation
+
+Ia general scenario we would have a NN like this:
+
+
+
+
+
 
 #### Resources and further reading
 
 You can find an example (very well written) [here](https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/) about gradient descent algorithm applied to backpropagation step-by-step with all maths.
 
-Also [here](https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c) there is a good tutorial with matrix calculations.
+Also [here](https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c) there is a good tutorial with matrix-style calculations.
 
 ### An operative example
 

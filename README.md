@@ -28,6 +28,8 @@ Because I like to learn everyday and teach to others what I have learned.
 
 **Please, take a look at the [Tutorial](AI Tutorial.md), is fun and explains what I did in this project. Very basic and for beginners, made of my own remarks and notes collected in years.**
 
+The tutorial is strictly related with the project, each major chapter has a "see in the code" section in order to find easly the argument in code.
+
 ## Coming soon
 
 
@@ -49,11 +51,13 @@ All is under *Briand* namespace. Project folders and files:
     |  |-- BriandNN.hxx          Neural Network library header
     |  |-- BriandCNN.hxx         Convolutional Neural Network library header
     |  |-- BriandMath.hxx        Math library (functions needed) header
-    |  |-- BriandImage.hxx       Image library header
+    |  |-- BriandMatrix.hxx      Matrix library header
+    |  |-- BriandImage.hxx       Image library header1
     |
     |-- BriandNN.cpp             Sources
     |-- BriandCNN.cpp
     |-- BriandMath.cpp
+    |-- BriandMatrix.cpp
     |-- BriandImage.cpp
     |-- BriandPorting.cpp
     |

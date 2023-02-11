@@ -23,6 +23,7 @@
 
 #include "BriandInclude.hxx"
 #include "BriandMath.hxx"
+#include "BriandMatrix.hxx"
 #include "BriandImage.hxx"
 #include "BriandNN.hxx"
 #include "BriandCNN.hxx"

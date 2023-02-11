@@ -14,6 +14,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//#define ESP_PLATFORM
+
 // Only one header is needed to use library.
 #include "BriandAI.hxx"
 
@@ -42,6 +44,58 @@ void performance_test(){
     const uint8_t TESTS = 10;
 
     //
+    // Matrixes
+    // 
+
+    unique_ptr<Matrix> m1, m2, m3;
+
+    for (uint8_t i = 0; i<TESTS; i++) {
+        start = esp_timer_get_time();
+        m1 = make_unique<Briand::Matrix>(5, 7, 2.2);
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("Matrix 5x7 allocation took: AVG = %ldus MIN = %ldus MAX = %luus.\n", static_cast<long>(avg), min, max, random);
+    
+    for (uint8_t i = 0; i<TESTS; i++) {
+        start = esp_timer_get_time();
+        m1->ApplyFunction(Briand::Math::Identity);
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("Matrix 5x7 function apply took: AVG = %ldus MIN = %ldus MAX = %luus.\n", static_cast<long>(avg), min, max, random);
+    
+    m1 = make_unique<Matrix>(5, 7, 2.2);
+    m2 = make_unique<Matrix>(7, 3, 0.5);
+
+    for (uint8_t i = 0; i<TESTS; i++) {
+        start = esp_timer_get_time();
+        m3 = m1->MultiplyMatrix(*m2.get());
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("Matrix 5x7 multiply by 7x3 took: AVG = %ldus MIN = %ldus MAX = %luus.\n", static_cast<long>(avg), min, max, random);
+
+    m1 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} } ));
+    m2 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {3, 5}, {2, 0}, {6, 1} } ));
+
+    m3 = m1->MultiplyMatrix(*m2.get());
+    m3->Print();
+
+    m1.reset();
+    m2.reset();
+    m3.reset();
+
+    //
     // Function calculations
     //
 
@@ -56,7 +110,6 @@ void performance_test(){
     } 
     printf("Random generation took: AVG = %ldus MIN = %ldus MAX = %luus. Latest random is: %lf\n", static_cast<long>(avg), min, max, random);
     
-
     for (uint8_t i = 0; i<TESTS; i++) {
         start = esp_timer_get_time();
         result = Briand::Math::ReLU(random*3.0);
