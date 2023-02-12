@@ -35,7 +35,7 @@ namespace Briand {
         /// @brief Weights FROM PREVIOUS LAYER
         unique_ptr<Matrix> _weights;
 
-        /// @brief Neuron net values 
+        /// @brief Neuron net values (weighted sum)
         unique_ptr<vector<double>> _neuronsNet;
 
         /// @brief Neuron activated values 

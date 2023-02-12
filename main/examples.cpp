@@ -131,7 +131,7 @@ void performance_test(){
     m1 = make_unique<Matrix>(std::initializer_list<std::initializer_list<double>>( { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} } ));
 
     */
-
+    
     m1.reset();
     m2.reset();
     m3.reset();
@@ -287,13 +287,19 @@ void performance_test(){
     unique_ptr<Briand::FCNN> fcnn;
 
     for (uint8_t i = 0; i<TESTS; i++) {
-        // Calculate output
-
         start = esp_timer_get_time();
         fcnn = make_unique<Briand::FCNN>();
+
+        /*
+              0.5                   1
+            1 --> (1*0.5+1*0.5)=1  --> (1*1+1*1) = 2      (2*0.1+2*0.2) = 0.5  
+              X                    X                  X  
+            1 --> (1*0.5+1*0.5)=1  --> (1*1+1*1) = 2      (2*0.1+2*0.1) = 0.4
+        */
+
         fcnn->AddInputLayer(2, {1, 1});
         fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {0.5, 0.5}, { 0.5, 0.5 } });
-        fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {2, 2}, { 2, 2 } });
+        fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity);
         fcnn->AddOutputLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, Briand::Math::MSE, { {0.1, 0.2}, { 0.1, 0.1 } });
         fcnn->Propagate();
         took = esp_timer_get_time() - start;
@@ -305,7 +311,7 @@ void performance_test(){
     printf("FCNN(2,2,2,2) took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf (expected 5.0)\n", static_cast<long>(avg), min, max, result);
 
     fcnn->PrintResult();
-
+    fcnn.reset();
 
     printf("***********************************************************\n\n\n");    
 }

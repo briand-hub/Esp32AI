@@ -43,6 +43,20 @@ Matrix::Matrix(const std::initializer_list<std::initializer_list<double>>& m) {
     }
 }
 
+Matrix::Matrix(const Matrix& other) {
+    // Instance new matrix with same rows and cols
+    this->_rows = other.Rows();
+    this->_cols = other.Cols();
+    
+    // Copy matrix weights while instancing
+    this->_matrix = new double*[this->_rows];
+    for (unsigned int i = 0; i < this->_rows; i++) {
+        this->_matrix[i] = new double[this->_cols];
+        for (unsigned int j = 0; j < this->_cols; j++)
+            this->_matrix[i][j] = other[i][j];
+    }    
+}
+
 void Matrix::InstanceMatrix(const double& initialValue /* = 0.0*/) {
     this->_matrix = new double*[this->_rows];
     for (unsigned int i = 0; i < this->_rows; i++) {
@@ -53,10 +67,10 @@ void Matrix::InstanceMatrix(const double& initialValue /* = 0.0*/) {
 
 Matrix::~Matrix() {
     for (unsigned int i = 0; i < this->_rows; i++) {
-        delete[] this->_matrix[i];
+        if (this->_matrix[i] != nullptr) delete[] this->_matrix[i];
     }
-
-    delete[] this->_matrix;
+    
+    if (this->_matrix != nullptr) delete[] this->_matrix;
 }
 
 const unsigned int& Matrix::Rows() const {

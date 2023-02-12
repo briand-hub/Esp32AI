@@ -56,6 +56,9 @@ namespace Briand {
         /// @param m initial values
         Matrix(const std::initializer_list<std::initializer_list<double>>& m);
 
+        /// @brief Useful copy constructor
+        Matrix(const Matrix& other);
+
         ~Matrix();
 
         /// @brief Return row number

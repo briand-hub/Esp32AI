@@ -32,7 +32,6 @@ NeuralLayer::NeuralLayer(const LayerType& type, const unsigned int& neurons, Act
     if (type != LayerType::Output && e != nullptr) throw runtime_error("Cannot specify cost/error calculation for non-output layers!");
 
     // Initialize
-
     this->_f = f;
     this->_df = df;
     this->_E = e;
@@ -103,6 +102,7 @@ FCNN::~FCNN() {
 void FCNN::AddInputLayer(const unsigned int& inputs) {
     // Check
     if (this->_layers->size() > 0) throw runtime_error("Input layer has been added before.");
+
     auto layer = make_unique<NeuralLayer>(LayerType::Input, inputs, nullptr, nullptr, nullptr);
     this->_layers->push_back(std::move(layer));
 }
@@ -130,7 +130,11 @@ void FCNN::AddHiddenLayer(const unsigned int& neurons, const ActivationFunction&
     if (this->_layers == nullptr || this->_layers->size() < 1) throw runtime_error("Cannot add hidden layer: missing an input layer.");
     if (this->_hasOutputs) throw runtime_error("Cannot add hidden layer after output layer!");
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Hidden, neurons, activationFunc, activationDer, nullptr);
+    // Default weights matrix with 1.0 value, as many rows as neurons, as many columns as previous layer neurons.
+    const int rows = neurons;
+    const int cols = this->_layers->at(this->_layers->size() - 1)->_neuronsOut->size();
+
+    auto layer = make_unique<NeuralLayer>(LayerType::Hidden, neurons, activationFunc, activationDer, nullptr, Matrix{rows, cols, 1.0});
     this->_layers->push_back(std::move(layer));
 }
 
@@ -154,7 +158,11 @@ void FCNN::AddOutputLayer(const unsigned int& outputs, const ActivationFunction&
     if (this->_hasOutputs) throw runtime_error("Output layer has been added before.");
     if (this->_layers == nullptr || this->_layers->size() < 1) throw runtime_error("Cannot add output layer: missing an input layer.");
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Output, outputs, activationFunc, activationDer, errorFunc);
+    // Default weights matrix with 1.0 value, as many rows as neurons, as many columns as previous layer neurons.
+    const int rows = outputs;
+    const int cols = this->_layers->at(this->_layers->size() - 1)->_neuronsOut->size();
+
+    auto layer = make_unique<NeuralLayer>(LayerType::Output, outputs, activationFunc, activationDer, errorFunc, Matrix{rows, cols, 1.0});
     this->_layers->push_back(std::move(layer));
 
     // Close network build
