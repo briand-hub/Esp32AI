@@ -41,8 +41,8 @@ namespace Briand {
         /// @brief Neuron activated values 
         unique_ptr<vector<double>> _neuronsOut;
         
-        /// @brief Bias neuron weight (input and hidden layers only, otherwise 0)
-        double _bias_weight;
+        /// @brief Bias neuron weights (input and hidden layers only, otherwise nullptr)
+        unique_ptr<vector<double>> _bias_weights;
 
         /// @brief Layer type
         LayerType _type;
@@ -64,7 +64,7 @@ namespace Briand {
         /// @param f Activation function (hidden and output layer only, mandatory)
         /// @param df Activation function derivative (hidden and output layer only, mandatory)
         /// @param e Error/Cost function (output layer only, required)
-        NeuralLayer(const LayerType& type, const unsigned int& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e);
+        NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e);
 
         /// @brief Builds a layer with specified weights.
         /// @param type Layer type
@@ -73,7 +73,7 @@ namespace Briand {
         /// @param df Activation function derivative (hidden and output layer only, mandatory)
         /// @param e Error/Cost function (output layer only, required)
         /// @param weights Weights to the next layer (input and hidden layers only). 1 row for each layer's neuron, 1 column for each previous layer neuron.
-        NeuralLayer(const LayerType& type, const unsigned int& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, const Matrix& weights);
+        NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, const Matrix& weights);
 
         /// @brief Builds a layer with specified weights.
         /// @param type Layer type
@@ -82,7 +82,7 @@ namespace Briand {
         /// @param df Activation function derivative (hidden and output layer only, mandatory)
         /// @param e Error/Cost function (output layer only, required)
         /// @param weights Weights to the next layer (input and hidden layers only). 1 row for each layer's neuron, 1 column for each previous layer neuron.
-        NeuralLayer(const LayerType& type, const unsigned int& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, const std::initializer_list<std::initializer_list<double>>& weights);
+        NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, const std::initializer_list<std::initializer_list<double>>& weights);
 
         ~NeuralLayer();
 
@@ -90,9 +90,9 @@ namespace Briand {
         /// @param fError Error calculation function
         void SetOutputErrorAs(const ErrorFunction& fError);
 
-        /// @brief Set the bias weight (input and hidden layers only)
-        /// @param bias_weight The bias weight (value always 1)
-        void SetBiasWeight(const double& bias_weight);
+        /// @brief Set the bias weights (input and hidden layers only)
+        /// @param bias_weights The bias weight vector (value always 1)
+        void SetBiasWeights(const vector<double>& bias_weights);
 
         /* The FCNN class can access to all properties and methods */
         friend class FCNN;
@@ -117,12 +117,12 @@ namespace Briand {
 
         /// @brief Adds input layer (can be called only once). STARTS THE NETWORK CREATION (must be first layer)
         /// @param inputs Number of inputs
-        void AddInputLayer(const unsigned int& inputs);
+        void AddInputLayer(const size_t& inputs);
 
         /// @brief Adds input layer with values (can be called only once). STARTS THE NETWORK CREATION (must be first layer)
         /// @param inputs Number of inputs
         /// @param values Initial input values
-        void AddInputLayer(const unsigned int& inputs, const vector<double>& values);
+        void AddInputLayer(const size_t& inputs, const vector<double>& values);
 
         /// @brief Set input for FCNN
         /// @param values Input values
@@ -132,21 +132,21 @@ namespace Briand {
         /// @param outputs Number of neurons
         /// @param activationFunc Activation function
         /// @param activationDer Activation function derivative
-        void AddHiddenLayer(const unsigned int& neurons, const ActivationFunction& activationFunc, const ActivationFunction& activationDer);
+        void AddHiddenLayer(const size_t& neurons, const ActivationFunction& activationFunc, const ActivationFunction& activationDer);
 
         /// @brief Adds hidden layer, in sequence. CONTINUES NETWORK CREATION (must be a "middle" layer)
         /// @param outputs Number of outputs
         /// @param activationFunc Activation function
         /// @param activationDer Activation function derivative
         /// @param weights Weights from previous layer (must have 1 row for each layer's neuron, 1 column for each previous layer neuron)
-        void AddHiddenLayer(const unsigned int& neurons, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const Matrix& weights);
+        void AddHiddenLayer(const size_t& neurons, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const Matrix& weights);
 
         /// @brief Adds output layer (can be called only once). CLOSES THE NETWORK CREATION (must be latest layer)
         /// @param outputs Number of outputs
         /// @param activationFunc Activation function
         /// @param activationDer Activation function derivative
         /// @param errorFunc Error/cost function
-        void AddOutputLayer(const unsigned int& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc);
+        void AddOutputLayer(const size_t& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc);
         
         /// @brief Adds output layer (can be called only once) with weights. CLOSES THE NETWORK CREATION (must be latest layer)
         /// @param outputs Number of outputs
@@ -154,19 +154,26 @@ namespace Briand {
         /// @param activationDer Activation function derivative
         /// @param errorFunc Error/cost function
         /// @param weights Weights from previous layer (must have 1 row for each layer's neuron, 1 column for each previous layer neuron)
-        void AddOutputLayer(const unsigned int& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc, const Matrix& weights);
+        void AddOutputLayer(const size_t& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc, const Matrix& weights);
     
         /// @brief Propagates (forward).
         void Propagate();
 
-        /// @brief Back propagation with specified targets.
-        /// @param targets The expected output values (must be equal in size to output neurons!)
-        void Backpropagate(const vector<double>& targets);
+        /// @brief Propagates the input forward and returns output neurons values
+        /// @param values Input values
+        /// @return Output neurons values (result)
+        unique_ptr<vector<double>> Predict(const vector<double>& inputs);
 
         /// @brief Returns output neurons values after a Propagate()
         /// @return Output neurons values (result)
         unique_ptr<vector<double>> GetResult();
 
+        /// @brief Train FCNN once with given inputs and expected output values.
+        /// @param inputs Inputs (must be equal in size to input neurons!)
+        /// @param targets Target values (must be equal in size to output neurons!)
+        /// @return Total error (sum of errors)
+        double Train(const vector<double>& inputs, const vector<double>& targets);
+        
         /// @brief Print out result
         void PrintResult();
     };

@@ -289,14 +289,7 @@ void performance_test(){
     for (uint8_t i = 0; i<TESTS; i++) {
         start = esp_timer_get_time();
         fcnn = make_unique<Briand::FCNN>();
-
-        /*
-              0.5                     1
-            1 --> (1*0.5+1*0.5+b)=2  --> (2*1+2*1+b) = 5      (5*0.1+5*0.2+b) = 2.5
-              X                       X                   X  
-            1 --> (1*0.5+1*0.5+b)=2  --> (2*1+2*1+b) = 5      (5*0.1+5*0.1+b) = 2.0
-        */
-
+        
         fcnn->AddInputLayer(2, {1, 1});
         fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {0.5, 0.5}, { 0.5, 0.5 } });
         fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity);
@@ -308,7 +301,7 @@ void performance_test(){
         max = (i == 0 ? took : ( took > max ? took : max ));
         avg += (static_cast<double>(took) / static_cast<double>(TESTS));
     } 
-    printf("FCNN(2,2,2,2) took: AVG = %ldus MIN = %ldus MAX = %ldus. Result = %lf (expected 5.0)\n", static_cast<long>(avg), min, max, result);
+    printf("FCNN(2,2,2,2) took: AVG = %ldus MIN = %ldus MAX = %ldus.\n", static_cast<long>(avg), min, max);
 
     fcnn->PrintResult();
     fcnn.reset();

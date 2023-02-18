@@ -32,10 +32,10 @@ namespace Briand {
         protected:
 
         /// @brief Columns
-        unsigned int _cols;
+        size_t _cols;
 
         /// @brief Rows
-        unsigned int _rows;
+        size_t _rows;
         
         /// @brief Internal matrix
         double** _matrix;
@@ -63,11 +63,11 @@ namespace Briand {
 
         /// @brief Return row number
         /// @return rows
-        const unsigned int& Rows() const;
+        const size_t& Rows() const;
 
         /// @brief Return col number
         /// @return cols
-        const unsigned int& Cols() const;
+        const size_t& Cols() const;
 
         /// @brief Multiply current matrix by a value.
         /// @param k value
@@ -86,16 +86,21 @@ namespace Briand {
         /// @brief Multiply current matrix with other (Hadamard product). 
         /// If input matrix is m*n a(i,j) elements other matrix must be m*n b(i,j) elements. Result will be a m*n matrix where elements are a(i,j)*b(i,j).
         /// @param other Matrix 
+        /// @return Matrix result
         unique_ptr<Matrix> MultiplyMatrixHadamard(const Matrix& other);
 
         /// @brief Apply f() function to all matrix elements
         /// @param f the function to apply f(x)
         void ApplyFunction(double (*f)(const double& x));
 
+        /// @brief Transpose operation. If input matrix is m*n a(i,j) returns n*m matrix with a(j,i) elements.
+        /// @return Transposed Matrix
+        unique_ptr<Matrix> Transpose();
+
         /// @brief Opertor m[i] returns the internal matrix row
         /// @param idx row index
         /// @return reference to internal pointer
-        double*& operator[](const int& idx) const;
+        double*& operator[](const size_t& idx) const;
 
         /// @brief Print out matrix for debug
         void Print();

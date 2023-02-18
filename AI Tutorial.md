@@ -353,7 +353,93 @@ However to generalize this iteration matrix model is easier and can cover any ki
 
 #### General backpropagation
 
-Ia general scenario we would have a NN like this:
+**General chain rule (scalar)**
+
+In calculus given $$ f(g(x)) $$ where given x we can say $$ x \to y = g(x) \to z = f(y) = f(g(x)) $$ the derivative of $$ f(g(x)) $$ is calculated with a chain formula, by multiplying $$f'(g(x)) * g'(x)$$ (at school I learned the rule: the derivative of the "external one" without considering the "internal one" multiplied by the "internal one" alone).
+Doing this with scalar has no "order" problems (commutative).
+
+**General chain rule multivariate (vectors)**
+
+When applied to multivariate functions (vectors as input, not scalar) the order is important. Suppose thinking to $x, y$ as vectors anfd $z$ still as a scalar (because loss/error is always a scalar!), so:
+
+$$x \in \mathbb{R^{n}} = { x_1, x_2, \dots, x_n }$$
+$$y \in \mathbb{R^{m}} = { y_1, y_2, \dots, y_m } $$
+$$z \in \mathbb{R}$$
+
+$$ x \in \mathbb{R^{n}} \to y = g(x) \in \mathbb{R^{m}} \to z = f(y) = f(g(x)) \in \mathbb{R} $$ 
+
+**General scenario**
+
+In a general scenario we would have a NN like this one:
+
+![](tutorial_imgs/FCNNGeneral.png)
+
+Where inputs are denoted as $x_{i}$ ($x$ is vector), $z_{i}$ is the weighted sum (net value), $a_{i}$ is the activated value (out value), and $y_{i}$ is the output value. Then $x, y, z, a$ are all vectors. 
+
+Now with weights:
+
+![](tutorial_imgs/FCNNGeneralW.png)
+
+Weights (of the first layer in the image) can be represented with a matrix with as many rows as the current layer's neurons ($l_{n}$ is "current" layer: first hidden layer in the example) and as many columns as the previous layer's neurons ($l_{n-1}$ is the previous layer, the input layer in the example). This is a 3x2 matrix of weights, denoted as $W$, of the first hidden layer:
+
+$$W_{1} = \begin{vmatrix}
+w_{11} & w_{12} \\
+w_{21} & w_{22} \\
+w_{31} & w_{32} \\
+\end{vmatrix}$$
+
+**Forward propagation with matrix**
+
+Same way, $x$ is the vector of inputs (2x1 matrix) and $b = {b1,b2}$ is the vector of bias weights (bias value is always 1).
+We can write the $z$ vector of net values as the multiplication matrix by vector (that is, weighted sum). Note the dot product $\odot$ is used (*"rows by columns multiply"*) and bias of the current layer (not the previous!) are considered (to simplify, consider $x$ values has been biased before.).
+
+$$
+z^{1} = W_{1} \odot x + b^{1} = \begin{vmatrix}
+w_{11} & w_{12} \\
+w_{21} & w_{22} \\
+w_{31} & w_{32} \\
+\end{vmatrix}
+\odot\begin{vmatrix}
+x_{1} \\
+x_{2} \\
+\end{vmatrix} + 
+\begin{vmatrix}
+b_{1} \\
+b_{2} \\
+b_{3} \\
+\end{vmatrix}
+= \begin{vmatrix}
+(w_{11}x_{1} + w_{12}x_{2}) +b_1 \\
+(w_{21}x_{1} + w_{22}x_{2}) +b_2 \\
+(w_{31}x_{1} + w_{32}x_{2}) +b_3 \\
+\end{vmatrix}
+= \begin{vmatrix}
+z_{1} \\
+z_{2} \\
+z_{3} \\
+\end{vmatrix}
+$$
+
+$$
+a^{1} = f(z^{1}) = f(W_{1} \odot x) = 
+f(\begin{vmatrix}
+z_{1} \\
+z_{2} \\
+z_{3} \\
+\end{vmatrix}) =
+\begin{vmatrix}
+f(z_{1}) \\
+f(z_{2}) \\
+f(z_{3}) \\
+\end{vmatrix} = 
+\begin{vmatrix}
+a_{1} \\
+a_{2} \\
+a_{3} \\
+\end{vmatrix}
+$$
+
+*Iterating, forward propagation is done!*
 
 
 

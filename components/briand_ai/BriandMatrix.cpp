@@ -30,8 +30,8 @@ Matrix::Matrix(const std::initializer_list<std::initializer_list<double>>& m) {
     this->_cols = 0;
     
     this->_matrix = new double*[this->_rows];
-    unsigned int i = 0;
-    unsigned int j;
+    size_t i = 0;
+    size_t j;
 
     for (auto& r : m) {
         if (this->_cols == 0) this->_cols = r.size();
@@ -50,40 +50,40 @@ Matrix::Matrix(const Matrix& other) {
     
     // Copy matrix weights while instancing
     this->_matrix = new double*[this->_rows];
-    for (unsigned int i = 0; i < this->_rows; i++) {
+    for (size_t i = 0; i < this->_rows; i++) {
         this->_matrix[i] = new double[this->_cols];
-        for (unsigned int j = 0; j < this->_cols; j++)
+        for (size_t j = 0; j < this->_cols; j++)
             this->_matrix[i][j] = other[i][j];
     }    
 }
 
 void Matrix::InstanceMatrix(const double& initialValue /* = 0.0*/) {
     this->_matrix = new double*[this->_rows];
-    for (unsigned int i = 0; i < this->_rows; i++) {
+    for (size_t i = 0; i < this->_rows; i++) {
         this->_matrix[i] = new double[this->_cols];
         std::fill_n(this->_matrix[i], this->_cols, initialValue);
     }
 }
 
 Matrix::~Matrix() {
-    for (unsigned int i = 0; i < this->_rows; i++) {
+    for (size_t i = 0; i < this->_rows; i++) {
         if (this->_matrix[i] != nullptr) delete[] this->_matrix[i];
     }
     
     if (this->_matrix != nullptr) delete[] this->_matrix;
 }
 
-const unsigned int& Matrix::Rows() const {
+const size_t& Matrix::Rows() const {
     return this->_rows;
 }
 
-const unsigned int& Matrix::Cols() const {
+const size_t& Matrix::Cols() const {
     return this->_cols;
 }
 
 void Matrix::MultiplyScalar(const double& k) {
-    for (unsigned int i = 0; i < this->_rows; i++) {
-        for (unsigned int j = 0; j < this->_cols; j++) {
+    for (size_t i = 0; i < this->_rows; i++) {
+        for (size_t j = 0; j < this->_cols; j++) {
             this->_matrix[i][j] = this->_matrix[i][j] * k;
         }
     }
@@ -96,11 +96,11 @@ unique_ptr<Matrix> Matrix::MultiplyMatrix(const Matrix& other) {
     // A(m,n) * B(n,p) = C(m,p)
     auto result = make_unique<Matrix>(this->_rows, other.Cols(), 0.0); 
 
-    const unsigned int N = other.Rows();
+    const size_t N = other.Rows();
 
-    for (unsigned int i = 0; i < result->Rows(); i++) {
-        for (unsigned int j = 0; j < result->Cols(); j++) {
-            for (unsigned int k = 0; k < N; k++)
+    for (size_t i = 0; i < result->Rows(); i++) {
+        for (size_t j = 0; j < result->Cols(); j++) {
+            for (size_t k = 0; k < N; k++)
                 (*result.get())[i][j] += (*this)[i][k] * other[k][j];
         }
     }
@@ -116,10 +116,10 @@ unique_ptr<Matrix> Matrix::MultiplyMatrixHadamard(const Matrix& other) {
     // A(m,n) * B(m,n) = C(m,n)
     auto result = make_unique<Matrix>(this->_rows, this->_cols, 0.0); 
 
-    const unsigned int N = other.Rows();
+    const size_t N = other.Rows();
 
-    for (unsigned int i = 0; i < result->Rows(); i++) {
-        for (unsigned int j = 0; j < result->Cols(); j++) {
+    for (size_t i = 0; i < result->Rows(); i++) {
+        for (size_t j = 0; j < result->Cols(); j++) {
             (*result.get())[i][j] += (*this)[i][j] * other[i][j];
         }
     }
@@ -133,9 +133,9 @@ unique_ptr<vector<double>> Matrix::MultiplyVector(const vector<double>& v) {
 
     auto r = make_unique<vector<double>>();
 
-    for (unsigned int i = 0; i < this->Rows(); i++) {
+    for (size_t i = 0; i < this->Rows(); i++) {
         double ri = 0;
-        for (unsigned int j = 0; j < this->Cols(); j++) {
+        for (size_t j = 0; j < this->Cols(); j++) {
             ri += this->_matrix[i][j] * v[j];
         }
         r->push_back(ri);
@@ -145,21 +145,33 @@ unique_ptr<vector<double>> Matrix::MultiplyVector(const vector<double>& v) {
 }
 
 void Matrix::ApplyFunction(double (*f)(const double& x)) {
-    for (unsigned int i = 0; i < this->_rows; i++) {
-        for (unsigned int j = 0; j < this->_cols; j++) {
+    for (size_t i = 0; i < this->_rows; i++) {
+        for (size_t j = 0; j < this->_cols; j++) {
             this->_matrix[i][j] = f(this->_matrix[i][j]);
         }
     }
 }
 
-double*& Matrix::operator[](const int& idx) const {
+unique_ptr<Matrix> Matrix::Transpose() {
+    auto result = make_unique<Matrix>(this->_cols, this->_rows, 0.0); 
+
+    for (size_t i = 0; i < this->_rows; i++) {
+        for (size_t j = 0; j < this->_cols; j++) {
+            (*result.get())[j][i] = this->_matrix[i][j];
+        }
+    }
+
+    return std::move(result);
+}
+
+double*& Matrix::operator[](const size_t& idx) const {
     return this->_matrix[idx];
 }
 
 void Matrix::Print() {
-    for (unsigned int i = 0; i < this->_rows; i++) {
+    for (size_t i = 0; i < this->_rows; i++) {
         printf("|  ");
-        for (unsigned int j = 0; j < this->_cols; j++) {
+        for (size_t j = 0; j < this->_cols; j++) {
             printf("%.2lf  ", this->_matrix[i][j]);
         }
         printf("|\n");
