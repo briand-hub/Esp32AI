@@ -248,7 +248,7 @@ So, at this point you should have in mind the structure and architecture of a Ne
 
 This process is just a series of math equations done once, twice and so on for a long time of **epochs** in order to let the computer find by itself the right values. This process is called **training** and the core of the training and the **learning** process is the **backpropagation**.
 
-### Backpropagation
+### Backpropagation (intro and concepts)
 
 We discussed about *forward* propagation where input layer values are driven through the network to the output layer. When we have our output we can calculate an error (remember, the $MSE$) given the expected target value.
 
@@ -351,14 +351,14 @@ We can proceed with the latest layer, the input layer. However procedure does no
 However to generalize this iteration matrix model is easier and can cover any kind of NN with the same procedure. In fact we could have any number of inputs, hidden layers and neurons (in any mix), output neurons and bias neurons. In order to give a generalized algorithm matrix model comes easier.
 
 
-#### General backpropagation
+### General backpropagation
 
-**General chain rule (scalar)**
+#### General chain rule (scalar)
 
 In calculus given $$ f(g(x)) $$ where given x we can say $$ x \to y = g(x) \to z = f(y) = f(g(x)) $$ the derivative of $$ f(g(x)) $$ is calculated with a chain formula, by multiplying $$f'(g(x)) * g'(x)$$ (at school I learned the rule: the derivative of the "external one" without considering the "internal one" multiplied by the "internal one" alone).
 Doing this with scalar has no "order" problems (commutative).
 
-**General chain rule multivariate (vectors)**
+#### General chain rule multivariate (vectors)
 
 When applied to multivariate functions (vectors as input, not scalar) the order is important. Suppose thinking to $x, y$ as vectors anfd $z$ still as a scalar (because loss/error is always a scalar!), so:
 
@@ -368,7 +368,7 @@ $$z \in \mathbb{R}$$
 
 $$ x \in \mathbb{R^{n}} \to y = g(x) \in \mathbb{R^{m}} \to z = f(y) = f(g(x)) \in \mathbb{R} $$ 
 
-**General scenario**
+#### General scenario
 
 In a general scenario we would have a NN like this one:
 
@@ -388,7 +388,9 @@ w_{21} & w_{22} \\
 w_{31} & w_{32} \\
 \end{vmatrix}$$
 
-**Forward propagation with matrix**
+#### Forward propagation with matrix
+
+I will follow notation and procedure from [this note from Stanford](http://ufldl.stanford.edu/tutorial/supervised/MultiLayerNeuralNetworks/) because is really well written. Also take a look at [CS229 note from Stanford](https://cs229.stanford.edu/notes-spring2019/backprop.pdf)
 
 Same way, $x$ is the vector of inputs (2x1 matrix) and $b = {b1,b2}$ is the vector of bias weights (bias value is always 1).
 We can write the $z$ vector of net values as the multiplication matrix by vector (that is, weighted sum). Note the dot product $\odot$ is used (*"rows by columns multiply"*) and bias of the current layer (not the previous!) are considered (to simplify, consider $x$ values has been biased before.).
@@ -439,20 +441,146 @@ a_{3} \\
 \end{vmatrix}
 $$
 
-*Iterating, forward propagation is done!*
+Iterating, forward propagation is done!
+
+---
+**&#x1F44B; Find it in the project!**</span>
+
+Matrix object: [BriandMatrix.hxx](components/briand_ai/include/BriandMatrix.hxx) and [BriandMatrix.cpp](components/briand_ai/BriandMatrix.cpp).
+
+```C++
+Briand::Matrix m;
+```
+By using a custom object for operations (matrix multiplication, hadamard product, dot product...) if a better algorithm is found it is easier to apply to all project!
+
+FCNN code is under the ``Briand`` namespace, separated from the Perceptron code (under the ``Briand::SimpleNN``) in order to use same object names but with a different implementation (matrix).
+
+```C++
+class NeuralLayer; // This is a layer. It consists of vector of values, activation function and (for output layer only) error calculation function. The internal matrix has the weights from the previous connected layer.
+
+class FCNN; // This is a fully connected neural network. By using utility methods layers can be added dynamically. 
+```
+
+Neural network (fully connected) sources are [BriandFCNN.hxx](components/briand_ai/include/BriandFCNN.hxx) and [BriandFCNN.cpp](components/briand_ai/BriandFCNN.cpp)
+
+FCNN Example:
+
+```C++
+// New instance, empty NN
+auto fcnn = make_unique<Briand::FCNN>();        
+
+// Add the input layer with 2 inputs and specify input values. A bias neuron is added automatically
+fcnn->AddInputLayer(2, {1, 1});
+
+// Add one hidden layer of 2 neurons and specify activation function and weights matrix. A bias neuron is added automatically
+fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {0.5, 0.5}, { 0.5, 0.5 } });
+
+// Add one hidden layer of 2 neurons and specify activation function; weights will be 1.0. A bias neuron is added automatically
+fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity);
+
+// Add the output layer (2 values), specify activation and error calculation function; specify last weight matrix.
+fcnn->AddOutputLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, Briand::Math::MSE, { {0.1, 0.2}, { 0.1, 0.1 } });
+
+// Propagate; the result is available calling GetResult().
+fcnn->Propagate();
+
+// Print out result vector (output values)
+fcnn->PrintResult();
+
+// Destroy object
+fcnn.reset();
+```
+
+Forward propagation using vector and matrix can be found in code looking at the  
+``FCNN::Propagate`` method.
+
+In the next section (backpropagation with matrix) you can find the procedure adopted in the code inside the ``FCNN::Train`` method.
+
+#### Backpropagation with matrix
+
+*I will continue to follow Stanford's notes.*
+
+With matrix notation, understanding backpropagation and math behind is easier. However the math behind does not change (derivatives are the core of the algorithm). Why matrixes? Easy: computers (CPUs and better GPUs) are famuos to be very efficient in matrix calculations!
+
+*Referring to ``FCNN::Train`` method.*
+
+Starting from the output layer, the output vector $y$ is compared with the target values vector $\overline y$ and the error vector (or 1x matrix) $J$ (often can be found as $E$) is calculated using the formula of MSE. Total error is calculated as the sum of all errors.
+
+$$
+J = 
+\begin{vmatrix}
+0.5*(\overline y_{1} - y_{1})^{2} \\
+0.5*(\overline y_{2} - y_{2})^{2} \\
+\end{vmatrix}
+$$
+
+Then, we have to minimize the function of $J(W,b)$ where $W$ is the weight matrix and $b$ the bias. The new weight of $w_{ij}$ (matrix element) at layer $l$ is given by the known formula:
+
+$$\overline w_{ij} = w_{ij} -\eta\frac{ \partial J }{ \partial w_{ij}}$$ 
+
+In order to do that, follow single steps from layer $L$ (output layer) downto layer 1 (input layer) foreach layer $l$. At each layer, save a "running" gradient to be used in the next operation. Just remember the notation:
+
+ - Layers are numbered from $1 \dots l \dots L$ wher 1 is input layer and $L$ the output layer. 
+ - $z^{l}_{i}$ is the net value, weighted sum, at layer $l$ (of neuron $i$)  
+ - $f$ is the activation function, $f^{'}$ its derivative (*Important! each layer has its own!*)
+ - $J$ is the error function, $J^{'}$ its derivative  
+ - $a^{l}_{i} = f(z^{l}_{i})$ is the out value, activated weighted sum, at layer $l$ (of neuron $i$)
+ - $b^{l}_{i}$ is the bias weight at layer $l$ (note $i$ because at layer $l$ we have $i$ neurons connected to $j$ neurons of the previous layer $l-1$)
+ - $w^{l}_{ij}$ is the weight connecting the $j$-th neuron of layer $l-1$ to the $i$-th neuron at layer $l$.
+ - $\overline y$ is the target value, $y$ is the output value but only at the output layer ($y = a_{i}^{L}$). 
+ - $x_{j}$ is the input value, layer 1 value ($x_j =  a^{1}_{j}$).
+ - Without $_{ij}$ or $_{i}$ notation a matrix or vector is meant. So $z^{l}$ is the net values vector at layer $l$,  $a^{l}$ the out values vector, $W^{l}$ the weight matrix from layer $l-1$ to layer $l$. In this matrix we have as many rows as neurons in layer $l$ and as many columns as layer $l-1$ neurons.
+ - The operator $\odot$ is the matrix dot-product (rows by columns), the operator $\bullet$ is matrix Hadamard product (element by element)
+
+**Algorithm**
+
+The core of the algorithm is calculating the "running" value $\delta^{l}$ that is the amount of error on the output for which the neuron $i$ at layer $l$ is responsible of. Can be found as vector called $\delta^{l}$ for the entire layer $l$. So:
+
+**1)** At output layer $L$ we have $\overline y$ and $y$ as target and output. Calculate for each output unit $i$:
+
+$$ \delta^{L} = \frac{ \partial J }{ \partial z^{L}} = 
+\frac{\partial( 0.5 (\overline y - y)^{2} )}{ \partial y} \bullet 
+\frac{\partial y}{\partial z^{L}} =
+(y - \overline y) \bullet f^{'}(z^{L}) 
+$$
+
+*Important! Activation function $f$ is always to be assumed as the activation function at the current layer $l$ and the same for its derivative $f^{'}$*
+
+**2)** Running backward, foreach layer $l$ calculate $\delta^{l}$ as:
+
+$$
+\delta^{l} = ( (W^{l})^{T} \odot \delta^{l+1} ) \bullet f^{'}(z^{l})
+$$
+
+Using $\delta$ the new weights and bias can be computed as:
+
+$$  
+\overline W^{l} = W^{l} - \eta (\delta^{l+1} \odot (a^{l})^T) \\
+\overline b^{l} = b^{l} - \eta (\delta^{l+1})
+$$
 
 
+---
+**&#x1F44B; Find it in the project!**</span>
 
+Neural network (fully connected) sources are [BriandFCNN.hxx](components/briand_ai/include/BriandFCNN.hxx) and [BriandFCNN.cpp](components/briand_ai/BriandFCNN.cpp)
 
-
+```C++
+fcnn = make_unique<Briand::FCNN>();
+fcnn->AddInputLayer(2); // no weights = random values
+fcnn->AddHiddenLayer(2, Briand::Math::Sigmoid, Briand::Math::DeSigmoid);
+fcnn->AddOutputLayer(1, Briand::Math::Sigmoid, Briand::Math::DeSigmoid, Briand::Math::MSE, Briand::Math::DeMSE);
+fcnn->Train({1, 0}, {1}, 0.1);
+```
+---
 
 #### Resources and further reading
+
+I think the best article to be read is [this](http://ufldl.stanford.edu/tutorial/supervised/MultiLayerNeuralNetworks/) and its [side note](https://cs229.stanford.edu/notes-spring2019/backprop.pdf) from Stanford university. It contains both the scalar and vector version of backpropagation and gradient descent algorithm.
 
 You can find an example (very well written) [here](https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/) about gradient descent algorithm applied to backpropagation step-by-step with all maths.
 
 Also [here](https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c) there is a good tutorial with matrix-style calculations.
-
-### An operative example
 
 ### Most used functions and their derivatives
 

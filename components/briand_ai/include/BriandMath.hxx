@@ -40,8 +40,14 @@ namespace Briand {
         /** @brief ReLU function */
         static constexpr double ReLU(const double& x) { return x > 0 ? x : 0; }
 
+        /** @brief ReLU derivative */
+        static constexpr double DeReLU(const double& x) { return x > 0 ? 1 : 0; }
+
         /** @brief Sigmoid function */
         static constexpr double Sigmoid(const double& x) { return 1 / (1 + exp(-1 * x)); }
+
+        /** @brief Sigmoid derivative */
+        static constexpr double DeSigmoid(const double& x) { return Sigmoid(x)*(1 - Sigmoid(x)); }
 
         /** @brief Weighted sum function */
         static double WeightedSum(const vector<double>& values, const vector<double>& weights);
@@ -51,6 +57,9 @@ namespace Briand {
 
         /** @brief Mean squared error */
         static constexpr double MSE(const double& target, const double& output) { return 0.5 * (target - output) * (target - output); }
+        
+        /** @brief Mean squared error derivative */
+        static constexpr double DeMSE(const double& target, const double& output) { return (output - target); }
     };
 
     /// @brief Typedef (alias with C++ using) an activation function as a function returning a double and asking a const double& as parameter

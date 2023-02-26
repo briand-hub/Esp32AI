@@ -23,7 +23,7 @@ using namespace Briand;
     Neural Layer class
 ***********************************************************************/
 
-NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e) {
+NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, ErrorFunction de) {
     // Check
     if (neurons == 0) throw out_of_range("Neurons must be > 0 for any layer");
     if (type == LayerType::Input && (f != nullptr || df != nullptr || e != nullptr)) throw runtime_error("Cannot specify f, df or e for input layer!");
@@ -35,8 +35,10 @@ NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, Activatio
     this->_f = f;
     this->_df = df;
     this->_E = e;
+    this->_dE = de;
     this->_type = type;
     this->_weights = nullptr;
+    this->_delta = nullptr;
 
     // Bias neuron value is always 1 so just handle the weights (FCN)
     this->_bias_weights = nullptr;
@@ -58,8 +60,8 @@ NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, Activatio
     }
 }
 
-NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, const Matrix& weights) 
-    : NeuralLayer(type, neurons, f, df, e)
+NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, ErrorFunction de, const Matrix& weights) 
+    : NeuralLayer(type, neurons, f, df, e, de)
 {
     // Weights allowed for non-input layers 
     if (this->_type == LayerType::Input) throw runtime_error("Weights not allowed for input layer.");
@@ -72,8 +74,8 @@ NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, Activatio
     this->_weights = make_unique<Matrix>(weights);
 }
 
-NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, const std::initializer_list<std::initializer_list<double>>& weights)
-    : NeuralLayer(type, neurons, f, df, e, Matrix{weights})
+NeuralLayer::NeuralLayer(const LayerType& type, const size_t& neurons, ActivationFunction f, ActivationFunction df, ErrorFunction e, ErrorFunction de, const std::initializer_list<std::initializer_list<double>>& weights)
+    : NeuralLayer(type, neurons, f, df, e, de, Matrix{weights})
 {
 }
 
@@ -81,6 +83,7 @@ NeuralLayer::~NeuralLayer() {
     this->_weights.reset();
     this->_neuronsNet.reset();
     this->_neuronsOut.reset();
+    this->_delta.reset();
 }
 
 void NeuralLayer::SetBiasWeights(const vector<double>& bias_weights) { 
@@ -107,7 +110,7 @@ void FCNN::AddInputLayer(const size_t& inputs) {
     // Check
     if (this->_layers->size() > 0) throw runtime_error("Input layer has been added before.");
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Input, inputs, nullptr, nullptr, nullptr);
+    auto layer = make_unique<NeuralLayer>(LayerType::Input, inputs, nullptr, nullptr, nullptr, nullptr);
     this->_layers->push_back(std::move(layer));
 }
 
@@ -134,11 +137,14 @@ void FCNN::AddHiddenLayer(const size_t& neurons, const ActivationFunction& activ
     if (this->_layers == nullptr || this->_layers->size() < 1) throw runtime_error("Cannot add hidden layer: missing an input layer.");
     if (this->_hasOutputs) throw runtime_error("Cannot add hidden layer after output layer!");
 
-    // Default weights matrix with 1.0 value, as many rows as neurons, as many columns as previous layer neurons.
+    // Default weights matrix with random values, as many rows as neurons, as many columns as previous layer neurons.
     const int rows = neurons;
     const int cols = this->_layers->at(this->_layers->size() - 1)->_neuronsOut->size();
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Hidden, neurons, activationFunc, activationDer, nullptr, Matrix{rows, cols, 1.0});
+    Matrix init{rows, cols};
+    init.Randomize();
+
+    auto layer = make_unique<NeuralLayer>(LayerType::Hidden, neurons, activationFunc, activationDer, nullptr, nullptr, init);
     this->_layers->push_back(std::move(layer));
 }
 
@@ -153,27 +159,30 @@ void FCNN::AddHiddenLayer(const size_t& neurons, const ActivationFunction& activ
     // Check: matrix must have as many columns as the PREVIOUS layer neurons
     if (this->_layers->at(this->_layers->size() - 1)->_neuronsOut->size() != weights.Cols()) throw out_of_range("Invalid weights: weight matrix cols must be equal to the number of previous layer neurons.");
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Hidden, neurons, activationFunc, activationDer, nullptr, weights);
+    auto layer = make_unique<NeuralLayer>(LayerType::Hidden, neurons, activationFunc, activationDer, nullptr, nullptr, weights);
     this->_layers->push_back(std::move(layer));
 }
 
-void FCNN::AddOutputLayer(const size_t& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc) {
+void FCNN::AddOutputLayer(const size_t& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc, const ErrorFunction& errorFuncDer) {
     // Check
     if (this->_hasOutputs) throw runtime_error("Output layer has been added before.");
     if (this->_layers == nullptr || this->_layers->size() < 1) throw runtime_error("Cannot add output layer: missing an input layer.");
 
-    // Default weights matrix with 1.0 value, as many rows as neurons, as many columns as previous layer neurons.
+    // Default weights matrix with random values, as many rows as neurons, as many columns as previous layer neurons.
     const int rows = outputs;
     const int cols = this->_layers->at(this->_layers->size() - 1)->_neuronsOut->size();
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Output, outputs, activationFunc, activationDer, errorFunc, Matrix{rows, cols, 1.0});
+    Matrix init{rows, cols};
+    init.Randomize();
+
+    auto layer = make_unique<NeuralLayer>(LayerType::Output, outputs, activationFunc, activationDer, errorFunc, errorFuncDer, init);
     this->_layers->push_back(std::move(layer));
 
     // Close network build
     this->_hasOutputs = true;
 }
 
-void FCNN::AddOutputLayer(const size_t& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc, const Matrix& weights) {
+void FCNN::AddOutputLayer(const size_t& outputs, const ActivationFunction& activationFunc, const ActivationFunction& activationDer, const ErrorFunction& errorFunc, const ErrorFunction& errorFuncDer, const Matrix& weights) {
     // Check
     if (this->_hasOutputs) throw runtime_error("Output layer has been added before.");
     if (this->_layers == nullptr || this->_layers->size() < 1) throw runtime_error("Cannot add output layer: missing an input layer.");
@@ -185,7 +194,7 @@ void FCNN::AddOutputLayer(const size_t& outputs, const ActivationFunction& activ
     if (this->_layers->at(this->_layers->size() - 1)->_neuronsOut->size() != weights.Cols()) throw out_of_range("Invalid weights: weight matrix cols must be equal to the number of previous layer neurons.");
 
 
-    auto layer = make_unique<NeuralLayer>(LayerType::Output, outputs, activationFunc, activationDer, errorFunc, weights);
+    auto layer = make_unique<NeuralLayer>(LayerType::Output, outputs, activationFunc, activationDer, errorFunc, errorFuncDer, weights);
     this->_layers->push_back(std::move(layer));
 
     // Close network build
@@ -259,7 +268,7 @@ unique_ptr<vector<double>> FCNN::Predict(const vector<double>& inputs) {
     return this->GetResult();
 }
 
-double FCNN::Train(const vector<double>& inputs, const vector<double>& targets) {
+double FCNN::Train(const vector<double>& inputs, const vector<double>& targets, const double& learningRate) {
     // Check
     if (this->_layers == nullptr || this->_layers->size() < 1) throw runtime_error("Cannot backpropagate: missing an input layer.");
     if (!this->_hasOutputs) throw runtime_error("Cannot backpropagate: missing an output layer.");
@@ -267,19 +276,106 @@ double FCNN::Train(const vector<double>& inputs, const vector<double>& targets) 
 
     // Get results
     auto outputs = this->Predict(inputs);
-    auto& outputLayer = this->_layers->at(this->_layers->size() - 1);
+    const auto& outputLayer = this->_layers->at(this->_layers->size() - 1);
+
+#if BRIAND_AI_DEBUG
+    printf("\n\n    ------ TRAINING\n");
+    printf("\nx = \n");
+    Matrix::PrintVector(inputs);
+    printf("\ny = \n");
+    Matrix::PrintVector(*outputLayer->_neuronsOut.get());
+    printf("\ny^ = \n");
+    Matrix::PrintVector(targets);
+#endif
 
     double totalError = 0;
 
-    // Calculate errors at output and total error
-    auto E = make_unique<vector<double>>(targets);
-    for(size_t i = 0; i<E->size(); i++) {
-        E->at(i) = outputLayer->_E(targets[i], outputs->at(i)); 
-        totalError += E->at(i);
+    // Calculate errors at output and total error. Save in J vector
+    auto J = make_unique<vector<double>>(targets);
+    for(size_t i = 0; i < J->size(); i++) {
+        J->at(i) = outputLayer->_E(targets[i], outputs->at(i)); 
+        totalError += J->at(i);
     }
 
+    // Calculate delta for output layer
+    outputLayer->_delta = make_unique<vector<double>>();  
+    for (size_t i = 0; i < outputLayer->_neuronsNet->size(); i++) {
+        // (y - y^)*df(z)
+        outputLayer->_delta->push_back( (outputs->at(i) - targets[i]) * outputLayer->_df(outputLayer->_neuronsNet->at(i)) );
+    }
 
-    
+#if BRIAND_AI_DEBUG
+    printf("\nTotal error = %.5f\n", totalError);
+    printf("\nJ = \n");
+    Matrix::PrintVector(*J.get());
+    printf("\ndelta_L = \n");
+    Matrix::PrintVector(*outputLayer->_delta.get());
+#endif
+
+    // Destroy unecessary objects
+    J.reset();
+
+    // Backward iterate (until input is reached).
+    for (size_t k = this->_layers->size() - 1; k >= 1; k--) {
+        /* REMEMBER that at level l there is always the l-1 weights matrix by construction!
+            
+            x --W(0)--> h1 --W(1)--> h1 --W(2)--> h2 --W(3)--> o
+
+            so at layer h2 the output matrix will be updated, at h1 the W2 and so on.
+            Input layer has no weights.
+        */
+
+        // Current layer l
+        const auto& l = this->_layers->at(k);
+
+        // Prev layer l-1
+        const auto& l_prev = this->_layers->at(k-1);
+
+        // Vector-Vector product delta_l+1 by transposed output of layer l
+        // Here l = l+1 so l = l-1
+        auto m1 = Matrix::DotMultiplyVectors(*l->_delta.get(), *l_prev->_neuronsOut.get());
+
+        // Multiply all elements by learning rate
+        m1->MultiplyScalar(learningRate);
+
+#if BRIAND_AI_DEBUG
+        printf("\nUpdating W_%d(%d,%d) ; b(%d). Using m1(%d,%d) = delta(%d)*a_l-1(%d) where l = %d\n"
+            , k
+            , l->_weights->Rows()
+            , l->_weights->Cols()
+            , l->_type != LayerType::Output ? l->_bias_weights->size() : 0
+            , m1->Rows()
+            , m1->Cols()
+            , l->_delta->size()
+            , l_prev->_neuronsOut->size()
+            , k
+        );
+#endif
+
+        // Check
+        assert(m1->Rows() == l->_weights->Rows());
+        assert(m1->Cols() == l->_weights->Cols());
+        assert(l->_delta->size() == l_prev->_bias_weights->size());
+
+        // Update weights and bias at layer l
+        for (int i=0; i < l->_weights->Rows(); i++) {
+            for (int j=0; j < l->_weights->Cols(); j++) {
+                l->_weights->at(i,j) -= m1->at(i,j); 
+            }
+            
+            l_prev->_bias_weights->at(i) -= learningRate * l->_delta->at(i);
+        }
+
+        // Calculate new delta (from current layer) to be delta_(l+1) in next for cycle
+        // delta_l = ( Wl_T dot delta_l+1 ) *hadamard df(z_l)
+        auto Wl_T = l->_weights->Transpose();
+        auto temp = Wl_T->MultiplyVector(*l->_delta.get());
+
+        l_prev->_delta = make_unique<vector<double>>();
+        for (int i=0; i < l->_neuronsNet->size(); i++) {
+            l_prev->_delta->push_back( temp->at(i) * l->_df(l->_neuronsNet->at(i)) );
+        }
+    }
 
     return totalError;
 }
@@ -287,10 +383,14 @@ double FCNN::Train(const vector<double>& inputs, const vector<double>& targets) 
 void FCNN::PrintResult() {
     // Check
     if (!this->_hasOutputs) throw runtime_error("GetResult() Error: missing an output layer.");
-
     auto& out = this->_layers->at(this->_layers->size() - 1);
+    Matrix::PrintVector(*out->_neuronsOut.get());
+    
+    /*
     printf("| ");
     for (auto it = out->_neuronsOut->begin(); it != out->_neuronsOut->end(); it++)
         printf(" %lf ", *it);
     printf(" |\n");
+    */
 }
+

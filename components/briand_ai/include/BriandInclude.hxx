@@ -16,6 +16,10 @@
 
 #pragma once
 
+#ifndef BRIAND_AI_DEBUG
+    #define BRIAND_AI_DEBUG 1 // DEBUG MODE (print to stdout calculus and other info)
+#endif
+
 #ifndef BRIAND_INCLUDE_H
 #define BRIAND_INCLUDE_H
 
@@ -36,6 +40,8 @@
     #include <algorithm>
     #include <unistd.h>
     #include <signal.h>
+	#include <limits>
+	#include <cassert>
 
     /* 
         Small code redefining in linux/windows platform used ESP functions and types in order to compile and test on other platforms

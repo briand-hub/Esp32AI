@@ -69,6 +69,9 @@ namespace Briand {
         /// @return cols
         const size_t& Cols() const;
 
+        /// @brief Randomize all matrix values
+        void Randomize();
+
         /// @brief Multiply current matrix by a value.
         /// @param k value
         void MultiplyScalar(const double& k);
@@ -88,10 +91,16 @@ namespace Briand {
         /// @param other Matrix 
         /// @return Matrix result
         unique_ptr<Matrix> MultiplyMatrixHadamard(const Matrix& other);
+        
+        /// @brief Dot multiplication of two vectors. Assuming vector v2 is transposed.
+        /// @param v1 Vector 1
+        /// @param v2t Vector 2 (assume transposed)
+        /// @return Dot product resulting matrix
+        static unique_ptr<Matrix> DotMultiplyVectors(const vector<double>& v1, const vector<double>& v2t);
 
         /// @brief Apply f() function to all matrix elements
         /// @param f the function to apply f(x)
-        void ApplyFunction(double (*f)(const double& x));
+        unique_ptr<Matrix> ApplyFunction(double (*f)(const double& x));
 
         /// @brief Transpose operation. If input matrix is m*n a(i,j) returns n*m matrix with a(j,i) elements.
         /// @return Transposed Matrix
@@ -102,8 +111,17 @@ namespace Briand {
         /// @return reference to internal pointer
         double*& operator[](const size_t& idx) const;
 
+        /// @brief Reference to element at i,j
+        /// @param i row index
+        /// @param j column index
+        /// @return Element at i,j
+        double& at(const size_t& i, const size_t& j);
+
         /// @brief Print out matrix for debug
         void Print();
+
+        /// @brief Print out a vector for debug
+        static void PrintVector(const vector<double>& v);
     };
 }
 

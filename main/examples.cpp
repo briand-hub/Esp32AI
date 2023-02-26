@@ -289,11 +289,11 @@ void performance_test(){
     for (uint8_t i = 0; i<TESTS; i++) {
         start = esp_timer_get_time();
         fcnn = make_unique<Briand::FCNN>();
-        
+
         fcnn->AddInputLayer(2, {1, 1});
         fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {0.5, 0.5}, { 0.5, 0.5 } });
-        fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity);
-        fcnn->AddOutputLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, Briand::Math::MSE, { {0.1, 0.2}, { 0.1, 0.1 } });
+        fcnn->AddHiddenLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, { {1, 1}, { 1, 1 } });
+        fcnn->AddOutputLayer(2, Briand::Math::Identity, Briand::Math::DeIdentity, Briand::Math::MSE, Briand::Math::DeMSE, { {0.1, 0.2}, { 0.1, 0.1 } });
         fcnn->Propagate();
         took = esp_timer_get_time() - start;
         avg = (i == 0 ? 0 : avg);
@@ -305,6 +305,29 @@ void performance_test(){
 
     fcnn->PrintResult();
     fcnn.reset();
+
+    // 
+    // FCNN Train (TESTS epoch) with xor problem
+    // 
+
+    fcnn = make_unique<Briand::FCNN>();
+    fcnn->AddInputLayer(2); // no weights = random values
+    fcnn->AddHiddenLayer(2, Briand::Math::Sigmoid, Briand::Math::DeSigmoid);
+    fcnn->AddOutputLayer(1, Briand::Math::Sigmoid, Briand::Math::DeSigmoid, Briand::Math::MSE, Briand::Math::DeMSE);
+
+    for (uint8_t i = 0; i<TESTS; i++) {
+        start = esp_timer_get_time();
+        fcnn->Train({1, 0}, {1}, 0.1);
+        took = esp_timer_get_time() - start;
+        avg = (i == 0 ? 0 : avg);
+        min = (i == 0 ? took : ( took < min ? took : min ));
+        max = (i == 0 ? took : ( took > max ? took : max ));
+        avg += (static_cast<double>(took) / static_cast<double>(TESTS));
+    } 
+    printf("FCNN(2,2,2,2) TRAIN took: AVG = %ldus MIN = %ldus MAX = %ldus.\n", static_cast<long>(avg), min, max);
+
+    fcnn.reset();
+
 
     printf("***********************************************************\n\n\n");    
 }

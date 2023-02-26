@@ -81,6 +81,14 @@ const size_t& Matrix::Cols() const {
     return this->_cols;
 }
 
+void Matrix::Randomize() {
+    for (size_t i = 0; i < this->_rows; i++) {
+        for (size_t j = 0; j < this->_cols; j++) {
+            // Random between 0 and 1
+            this->at(i, j) = static_cast<double>(esp_random()) / static_cast<double>(RAND_MAX);        }
+    }
+}
+
 void Matrix::MultiplyScalar(const double& k) {
     for (size_t i = 0; i < this->_rows; i++) {
         for (size_t j = 0; j < this->_cols; j++) {
@@ -144,12 +152,37 @@ unique_ptr<vector<double>> Matrix::MultiplyVector(const vector<double>& v) {
     return std::move(r);
 }
 
-void Matrix::ApplyFunction(double (*f)(const double& x)) {
+unique_ptr<Matrix> Matrix::DotMultiplyVectors(const vector<double>& v1, const vector<double>& v2t) {
+    // v1(m) * v2(p) = Matrix(m,p)
+    auto result = make_unique<Matrix>(v1.size(), v2t.size(), 0.0);
+
+    /*
+        
+        |v1|               |v1t1 v1t2|
+        |v2| * |t1 t2|   = |v2t1 v2t2|
+        |v3|               |v3t1 v3t2|
+        
+    */
+
+    for (size_t i=0; i < v1.size(); i++) {
+        for (size_t j=0; j < v2t.size(); j++) {
+            result->at(i, j) = (v1[i] * v2t[j]);
+        }    
+    }
+
+    return std::move(result); 
+}
+
+unique_ptr<Matrix> Matrix::ApplyFunction(double (*f)(const double& x)) {
+    auto result = make_unique<Matrix>(this->_rows, this->_cols, 0.0);  
+
     for (size_t i = 0; i < this->_rows; i++) {
         for (size_t j = 0; j < this->_cols; j++) {
-            this->_matrix[i][j] = f(this->_matrix[i][j]);
+            result->at(i, j) = f(this->_matrix[i][j]);
         }
     }
+
+    return std::move(result);
 }
 
 unique_ptr<Matrix> Matrix::Transpose() {
@@ -168,6 +201,10 @@ double*& Matrix::operator[](const size_t& idx) const {
     return this->_matrix[idx];
 }
 
+double& Matrix::at(const size_t& i, const size_t& j) {
+    return (this->_matrix[i][j]);
+}
+
 void Matrix::Print() {
     for (size_t i = 0; i < this->_rows; i++) {
         printf("|  ");
@@ -176,6 +213,14 @@ void Matrix::Print() {
         }
         printf("|\n");
     }
+}
+
+void Matrix::PrintVector(const vector<double>& v) {
+    printf("|  ");
+    for (size_t j = 0; j < v.size(); j++) {
+        printf("%.2lf  ", v[j]);
+    }
+    printf("|\n");
 }
 
 

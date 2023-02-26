@@ -109,7 +109,7 @@ Tested on ESP32-S3 WROOM (by Freenove kit)
  - [x] Decide sample project for starting
  - [x] NN basics
  - [x] NN tests 
- - [ ] Deep learning basics
+ - [x] Deep learning basics
  - [ ] Deep learning tests
  - [ ] CNN basics
  - [ ] CNN tests
